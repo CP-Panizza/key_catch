@@ -239,7 +239,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
         for(int i = 0; i <= this->keylog.end_index; i++){
             time_t now = clock();
             if(now - this->keylog.key_logs[i]->show_time <= SHOW_TIME){
-                this->paint(this->keylog.key_logs[i]->img, 180, this->keylog.key_logs[i]->x, this->keylog.key_logs[i]->y);
+                this->paint(this->keylog.key_logs[i]->img, 230, this->keylog.key_logs[i]->x, this->keylog.key_logs[i]->y);
             }
         }
     }
@@ -294,13 +294,37 @@ void MainWindow::load_data()
 void MainWindow::paint(Matrix<int> *img, int alpha,  int x, int y)
 {
     QPainter painter(this);
-    for (int i=0; i < img->height;i++) {
-        for (int j=0;j < img->width; j++) {
+    int r = 10;
+    double distance = 0.0;
+    for (int i = 0; i < img->height; ++i)
+    {
+        for (int j = 0; j < img->width; ++j)
+        {
+            if(i <= r && j <= r){
+                distance = ::pow((pow(i - r, 2)+pow(j - r,2)), 0.5);
+                if(distance > r) continue;
+            } else if(i <= r && j >= img->width - r){
+                distance = ::pow((pow(i - r, 2)+pow(j - (img->width - r),2)), 0.5);
+                if(distance > r) continue;
+            } else if(i >= img->height - r && j <= r){
+                distance = ::pow((pow(i - (img->height - r), 2)+pow(j - r,2)), 0.5);
+                if(distance > r) continue;
+            } else if(i >= img->height - r && j >= img->width - r){
+                distance = ::pow((pow(i - (img->height - r), 2)+pow(j - (img->width - r),2)), 0.5);
+                if(distance > r) continue;
+            }
             int v = img->Get(i,j);
             painter.setPen(QColor(v,v,v, alpha));
             painter.drawPoint(j+x,i+y);
         }
     }
+//    for (int i=0; i < img->height;i++) {
+//        for (int j=0;j < img->width; j++) {
+//            int v = img->Get(i,j);
+//            painter.setPen(QColor(v,v,v, alpha));
+//            painter.drawPoint(j+x,i+y);
+//        }
+//    }
 }
 
 
