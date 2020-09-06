@@ -17,6 +17,8 @@
 
 
 #define SHOW_TIME 5000
+#define CIRCLE_R 60
+
 
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QColor>
+#include <QPen>
 #include <QRect>
 #include <QDesktopWidget>
 #include "utils.h"
@@ -140,6 +141,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+
+
+
     g_wd = this;
 
     this->load_data();
@@ -171,11 +175,12 @@ MainWindow::MainWindow(QWidget *parent)
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setFixedSize(screenRect.width(), screenRect.height());
 
+    ::SetWindowLong((HWND)winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED); //set window mouse penetrate
     QTimer *qtimer1 = new QTimer(this);
     QObject::connect(qtimer1, &QTimer::timeout,[this]{
         this->repaint();
     });
-    qtimer1->start(100);
+    qtimer1->start(10);
 
 
     this->system_tray = new QSystemTrayIcon(this);
@@ -235,6 +240,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
+    if(this->current_mouse_x != 0 && this->current_mouse_y != 0){
+        QPainter painter(this);
+        painter.setPen(QPen(Qt::transparent,0));
+        painter.setBrush(QColor(255,0,0, 70));
+        painter.drawEllipse(this->current_mouse_x - (CIRCLE_R / 2), this->current_mouse_y - (CIRCLE_R / 2), CIRCLE_R, CIRCLE_R);
+    }
+
     if(!this->keylog.empty()){
         for(int i = 0; i <= this->keylog.end_index; i++){
             time_t now = clock();
@@ -318,6 +330,8 @@ void MainWindow::paint(Matrix<int> *img, int alpha,  int x, int y)
             painter.drawPoint(j+x,i+y);
         }
     }
+
+
 //    for (int i=0; i < img->height;i++) {
 //        for (int j=0;j < img->width; j++) {
 //            int v = img->Get(i,j);
