@@ -27,6 +27,16 @@ time_t last_enter_time = 0;
 DWORD last_key = 0;
 bool long_tap = false;
 bool shift_down = false;
+
+
+bool is_top_most(HWND hwnd){
+    if (::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST){
+        return true;
+    }
+    return false;
+}
+
+
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0)
@@ -45,6 +55,7 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 shift_down = false;
             }
         } else if(wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+//            qDebug() << "vkCode:" << k.vkCode;
             time_t enter_time = clock();
             if(last_enter_time == 0){
                 last_enter_time = enter_time;
@@ -55,7 +66,7 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             }
             last_enter_time = enter_time;
 
-//            qDebug() << "vkCode:" << k.vkCode;
+
 
             if(last_key == k.vkCode){
 //                qDebug() << "long_tap:" << k.vkCode;
@@ -308,37 +319,41 @@ void MainWindow::paint(Matrix<int> *img, int alpha,  int x, int y)
     QPainter painter(this);
     int r = 10;
     double distance = 0.0;
+    bool is_in_area = false;
     for (int i = 0; i < img->height; ++i)
     {
         for (int j = 0; j < img->width; ++j)
         {
+            is_in_area = false;
+            int p1 = 0, p2 = 0;
             if(i <= r && j <= r){
-                distance = ::pow((pow(i - r, 2)+pow(j - r,2)), 0.5);
-                if(distance > r) continue;
+                is_in_area = true;
+                p1 = i - r;
+                p2 = j - r;
             } else if(i <= r && j >= img->width - r){
-                distance = ::pow((pow(i - r, 2)+pow(j - (img->width - r),2)), 0.5);
-                if(distance > r) continue;
+                is_in_area = true;
+                p1 = i - r;
+                p2 = j - (img->width - r);
             } else if(i >= img->height - r && j <= r){
-                distance = ::pow((pow(i - (img->height - r), 2)+pow(j - r,2)), 0.5);
-                if(distance > r) continue;
+                is_in_area = true;
+                p1 = i - (img->height - r);
+                p2 = j - r;
             } else if(i >= img->height - r && j >= img->width - r){
-                distance = ::pow((pow(i - (img->height - r), 2)+pow(j - (img->width - r),2)), 0.5);
+                is_in_area = true;
+                p1 = i - (img->height - r);
+                p2 = j - (img->width - r);
+            }
+
+            if(is_in_area){
+                distance = ::pow((::pow(p1, 2)+::pow(p2,2)), 0.5);
                 if(distance > r) continue;
             }
+
             int v = img->Get(i,j);
             painter.setPen(QColor(v,v,v, alpha));
             painter.drawPoint(j+x,i+y);
         }
     }
-
-
-//    for (int i=0; i < img->height;i++) {
-//        for (int j=0;j < img->width; j++) {
-//            int v = img->Get(i,j);
-//            painter.setPen(QColor(v,v,v, alpha));
-//            painter.drawPoint(j+x,i+y);
-//        }
-//    }
 }
 
 
