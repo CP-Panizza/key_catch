@@ -45,6 +45,10 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
     else if (nCode == HC_ACTION)
     {
+
+        if(!g_wd->key_log){
+            return CallNextHookEx(g_hHook, nCode, wParam, lParam);
+        }
         KBDLLHOOKSTRUCT k = *(KBDLLHOOKSTRUCT *)lParam;
         if(wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
             last_key = 0;
@@ -152,9 +156,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-
-
-
     g_wd = this;
 
     this->load_data();
@@ -251,6 +252,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
+
     if(this->current_mouse_x != 0 && this->current_mouse_y != 0){
         QPainter painter(this);
         painter.setPen(QPen(Qt::transparent,0));
@@ -258,14 +260,19 @@ void MainWindow::paintEvent(QPaintEvent *event)
         painter.drawEllipse(this->current_mouse_x - (CIRCLE_R / 2), this->current_mouse_y - (CIRCLE_R / 2), CIRCLE_R, CIRCLE_R);
     }
 
-    if(!this->keylog.empty()){
-        for(int i = 0; i <= this->keylog.end_index; i++){
-            time_t now = clock();
-            if(now - this->keylog.key_logs[i]->show_time <= SHOW_TIME){
-                this->paint(this->keylog.key_logs[i]->img, 230, this->keylog.key_logs[i]->x, this->keylog.key_logs[i]->y);
+    if(this->key_log){
+        if(!this->keylog.empty()){
+            for(int i = 0; i <= this->keylog.end_index; i++){
+                time_t now = clock();
+                if(now - this->keylog.key_logs[i]->show_time <= SHOW_TIME){
+                    this->paint(this->keylog.key_logs[i]->img, 230, this->keylog.key_logs[i]->x, this->keylog.key_logs[i]->y);
+                }
             }
         }
     }
+
+
+
 }
 
 void MainWindow::load_data()

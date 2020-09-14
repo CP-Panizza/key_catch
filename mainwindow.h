@@ -87,6 +87,9 @@ public:
     int current_mouse_x = 0;
     int current_mouse_y = 0;
 
+
+    bool cut_screen = false;
+    bool key_log = true;
 };
 
 extern MainWindow *g_wd;

@@ -20,6 +20,7 @@ SOURCES += \
     keylog.cpp \
     main.cpp \
     mainwindow.cpp \
+    subwindow.cpp \
     utils.cpp
 
 HEADERS += \
@@ -27,6 +28,7 @@ HEADERS += \
     keylog.h \
     mainwindow.h \
     matrix.hpp \
+    subwindow.h \
     utils.h
 
 FORMS += \

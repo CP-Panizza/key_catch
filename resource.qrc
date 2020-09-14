@@ -3,5 +3,11 @@
         <file>icon.ico</file>
         <file>data.txt</file>
         <file>welcome.txt</file>
+        <file>icon.png</file>
+        <file>cut.png</file>
+        <file>kb.png</file>
+        <file>_cut.png</file>
+        <file>_kb.png</file>
+        <file>shut.png</file>
     </qresource>
 </RCC>
