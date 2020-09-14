@@ -17,6 +17,8 @@ public:
     void update();
     bool empty();
 
+    void clear();
+
     int screen_width;
     int screen_height;
 

@@ -33,17 +33,18 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
 
     this->key_log_btn = new QPushButton(this);
     this->key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
-    this->key_log_btn->setFlat(true);
+//    this->key_log_btn->setFlat(true);
     this->key_log_btn->move(20, 40);
 
     this->cut_btn = new QPushButton(this);
     this->cut_btn->setStyleSheet("border-image:url(:/cut.png); width:30px; height: 30px;");
-    this->cut_btn->setFlat(true);
+//    this->cut_btn->setFlat(true);
     this->cut_btn->move(60, 40);
 
     auto shut_btn = new QPushButton(this);
-    shut_btn->setStyleSheet("border-image:url(:/shut.png); width:25px; height: 25px;");
-    shut_btn->setFlat(true);
+    shut_btn->setObjectName("shut_btn");
+    shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}");
+//    shut_btn->setFlat(true);
     shut_btn->move(100, 43);
 
     connect(shut_btn, &QPushButton::clicked, [](){

@@ -48,3 +48,11 @@ bool Keylog::empty()
 {
     return end_index == -1 ? true : false;
 }
+
+void Keylog::clear()
+{
+    for(int i = 0; i < this->cap; i++){
+        delete(this->key_logs[i]);
+    }
+    this->end_index = -1;
+}

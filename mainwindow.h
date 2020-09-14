@@ -40,10 +40,23 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void setApplication(QApplication *app);
+
+    void hold_screen(QPixmap &screen_img);
+
+
+    enum CutScreenStuta{
+        NONE,
+        PAINTING,
+        CHOOSING_RECT,
+        CHOOSE_DONE
+    };
+
 protected:
     void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 
     void load_data();
@@ -52,7 +65,7 @@ public slots:
     void active_tray();
 
 private:
-    Ui::MainWindow *ui;
+
     QPoint windowPos;
     QPoint mousePos;
     QPoint dPos;
@@ -71,6 +84,7 @@ public:
 //    std::vector<int> alphabet{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 //    std::vector<int> control{VK_ESCAPE,VK_SHIFT, VK_CONTROL, VK_MENU, VK_SPACE, VK_TAB, VK_BACK, VK_RETURN,VK_LWIN,VK_INSERT,VK_DELETE,VK_HOME,VK_END, VK_LEFT, VK_UP, VK_DOWN, VK_RIGHT, VK_F1, VK_F2, VK_F3, VK_F4,VK_F5,VK_F6,VK_F7,VK_F8, VK_F9,VK_F10,VK_F11,VK_F12};
 
+    Ui::MainWindow *ui;
 
     QMap<int, Matrix<int> *> img_map;   //key_img_data
     Keylog keylog;
@@ -90,6 +104,12 @@ public:
 
     bool cut_screen = false;
     bool key_log = true;
+
+
+    QPixmap *screen_img = nullptr;
+
+    CutScreenStuta stuta = CutScreenStuta::NONE;
+
 };
 
 extern MainWindow *g_wd;

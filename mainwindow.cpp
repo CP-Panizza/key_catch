@@ -19,7 +19,6 @@
 
 
 
-
 HHOOK g_hHook = nullptr;
 HHOOK g_hHook_mous = nullptr;
 MainWindow *g_wd = nullptr;
@@ -36,7 +35,6 @@ bool is_top_most(HWND hwnd){
     return false;
 }
 
-
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0)
@@ -45,6 +43,8 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
     else if (nCode == HC_ACTION)
     {
+
+
 
         if(!g_wd->key_log){
             return CallNextHookEx(g_hHook, nCode, wParam, lParam);
@@ -59,6 +59,13 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 shift_down = false;
             }
         } else if(wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+            if(g_wd->stuta == MainWindow::CutScreenStuta::PAINTING && k.vkCode == 27){
+                delete g_wd->screen_img;
+                g_wd->screen_img = nullptr;
+                g_wd->stuta = MainWindow::CutScreenStuta::NONE;
+                g_wd->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
+                ::SetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            }
 //            qDebug() << "vkCode:" << k.vkCode;
             time_t enter_time = clock();
             if(last_enter_time == 0){
@@ -181,9 +188,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->setMouseTracking(true);
     ui->setupUi(this);
-    this->setWindowFlag(Qt::WindowStaysOnTopHint);
-    this->setWindowFlag(Qt::FramelessWindowHint);
-    this->setWindowFlag(Qt::Tool);
+    this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setFixedSize(screenRect.width(), screenRect.height());
 
@@ -238,16 +243,34 @@ void MainWindow::setApplication(QApplication *app)
     this->app = app;
 }
 
+void MainWindow::hold_screen(QPixmap &screen_img)
+{
+    if(this->screen_img != nullptr){
+        delete(this->screen_img);
+    } else {
+        this->screen_img = new QPixmap(screen_img);
+    }
+}
+
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
+    qDebug() << "press:x" << event->globalPos().x() << " y:" << event->globalPos().y();
+     qDebug() << "press:x" << this->current_mouse_x << " y:" << this->current_mouse_y;
+//    this->stuta = MainWindow::CHOOSING_RECT;
     this->windowPos = this->pos();
     this->mousePos = event->globalPos();
     this->dPos = mousePos - windowPos;
 }
 
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    qDebug() << "Release";
+}
+
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
-    this->move(event->globalPos() - this->dPos);
+//    this->move(event->globalPos() - this->dPos);
+    qDebug() << "move";
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -271,8 +294,15 @@ void MainWindow::paintEvent(QPaintEvent *event)
         }
     }
 
+    if(this->screen_img != nullptr){
+        QPainter painter(this);
+        painter.drawPixmap(0, 0, width(), height(), *this->screen_img);
+    }
+}
 
-
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    exit(0);
 }
 
 void MainWindow::load_data()
