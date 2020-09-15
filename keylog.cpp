@@ -51,7 +51,10 @@ bool Keylog::empty()
 
 void Keylog::clear()
 {
-    for(int i = 0; i < this->cap; i++){
+    if(this->empty()){
+        return;
+    }
+    for(int i = 0; i < this->end_index; i++){
         delete(this->key_logs[i]);
     }
     this->end_index = -1;

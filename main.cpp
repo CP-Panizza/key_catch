@@ -38,29 +38,20 @@ int main(int argc, char *argv[])
     });
 
     QObject::connect(float_pan.cut_btn, &QPushButton::clicked, [&](){
+        if(w.stuta == MainWindow::CutScreenStuta::PAINTING){
+            return;
+        }
+        if(!float_pan.key_log){
+            qDebug() << "key log is shut";
+            w.key_log = true;
+            float_pan.key_log = true;
+            float_pan.key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
+        }
         QScreen *screen = QGuiApplication::primaryScreen();
         QPixmap screen_img = screen->grabWindow(0);
         w.hold_screen(screen_img);
         ::SetWindowLong((HWND)w.winId(), GWL_EXSTYLE, 256);  //cancel mouse penetrate
         w.stuta = MainWindow::CutScreenStuta::PAINTING;
-//        w.setWindowFlag(Qt::WindowStaysOnTopHint, false);
-//        QString fileName = QFileDialog::getSaveFileName(nullptr,
-//                ("save file"),
-//                "",
-//                ("save (*.png)"));
-
-//        if (!fileName.isNull())
-//        {
-//            qDebug() << fileName;
-//            if(!screen_img.save(fileName, "png"))
-//            {
-//                QMessageBox::critical(nullptr, "error",
-//                                                    "save image error!",
-//                                                    QMessageBox::Ignore);
-//            } else {
-//                QMessageBox::information(nullptr, "success", "save image success");
-//            }
-//        }
     });
 
 

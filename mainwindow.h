@@ -110,6 +110,11 @@ public:
 
     CutScreenStuta stuta = CutScreenStuta::NONE;
 
+    int cut_img_start_x = 0;
+    int cut_img_start_y = 0;
+    int cut_img_end_x = 0;
+    int cut_img_end_y = 0;
+
 };
 
 extern MainWindow *g_wd;

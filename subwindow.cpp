@@ -8,8 +8,16 @@
 #include <QBitmap>
 #include <QPushButton>
 
+#include <QPropertyAnimation>
+#include <QApplication>
+#include <QScreen>
+#include <QDesktopWidget>
+#include <QDebug>
+
 SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
 {
+    QRect rect = QApplication::desktop()->screenGeometry();
+    m_screenWidth = rect.width();
     this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
     this->setFixedSize(150,100);
     QFrame *frame = new QFrame(this);
@@ -35,17 +43,20 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
 //    this->key_log_btn->setFlat(true);
     this->key_log_btn->move(20, 40);
+    this->key_log_btn->setFocusPolicy(Qt::NoFocus);
 
     this->cut_btn = new QPushButton(this);
     this->cut_btn->setStyleSheet("border-image:url(:/cut.png); width:30px; height: 30px;");
 //    this->cut_btn->setFlat(true);
     this->cut_btn->move(60, 40);
+    this->cut_btn->setFocusPolicy(Qt::NoFocus);
 
     auto shut_btn = new QPushButton(this);
     shut_btn->setObjectName("shut_btn");
     shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}");
 //    shut_btn->setFlat(true);
     shut_btn->move(100, 43);
+    shut_btn->setFocusPolicy(Qt::NoFocus);
 
     connect(shut_btn, &QPushButton::clicked, [](){
         exit(0);
@@ -57,21 +68,110 @@ SubWindow::~SubWindow()
 
 }
 
+bool SubWindow::isWindowInScreen(QPoint pos)
+{
+    if(pos.x()<5){
+        m_hp = HP_Left;
+        qDebug() << "left";
+        return false;
+    }
+    else if(pos.x()>m_screenWidth-5){
+        m_hp = HP_Right;
+        qDebug() << "right";
+        return false;
+    }
+    else if(pos.y()<5){
+        m_hp = HP_Top;
+        qDebug() << "top";
+        return false;
+    }
+    else{
+        qDebug() << "none";
+        m_hp = HP_None;
+        return true;
+    }
+}
+
+void SubWindow::hideWindow()
+{
+    QPropertyAnimation * animation = new QPropertyAnimation(this, "geometry");
+    animation->setStartValue(QRect(x(),y(),width(),height()));
+    if(m_hp == HP_None)
+        return;
+    else if(m_hp == HP_Top)
+        animation->setEndValue(QRect(x(),25-height(),width(),height()));
+    else if(m_hp == HP_Left)
+        animation->setEndValue(QRect(25-width(),y(),width(),height()));
+    else if(m_hp == HP_Right)
+        animation->setEndValue(QRect(m_screenWidth-25,y(),width(),height()));
+
+    animation->setDuration(250);
+    animation->start();
+}
+
+void SubWindow::showWindow()
+{
+    QPropertyAnimation * animation = new QPropertyAnimation(this, "geometry");
+    animation->setStartValue(QRect(x(),y(),width(),height()));
+    if(m_hp == HP_None)
+        return;
+    else if(m_hp == HP_Top)
+        animation->setEndValue(QRect(x(),0,width(),height()));
+    else if(m_hp == HP_Left)
+        animation->setEndValue(QRect(0,y(),width(),height()));
+    else if(m_hp == HP_Right)
+        animation->setEndValue(QRect(m_screenWidth-width(),y(),width(),height())); 
+    animation->setDuration(250);
+    animation->start();
+}
+
 
 
 void SubWindow::mousePressEvent(QMouseEvent *event)
 {
-    this->windowPos = this->pos();
-    this->mousePos = event->globalPos();
-    this->dPos = mousePos - windowPos;
+    if(event->button() == Qt::LeftButton)
+    {
+        m_isLMousePress = true;
+        m_relativePos = event->globalPos() - pos();//记录相对位置
+    }
+}
+
+void SubWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_isLMousePress = false;
 }
 
 
 void SubWindow::mouseMoveEvent(QMouseEvent *event){
-    this->move(event->globalPos() - this->dPos);
+    if(m_isLMousePress && isWindowInScreen(event->globalPos()))
+        move(event->globalPos()-m_relativePos);//实现无边框移动
+    else if(m_isLMousePress && !isWindowInScreen(event->globalPos()))
+    {
+        //特殊位置，移动规则不同
+        int x = event->globalPos().x();
+        int y = event->globalPos().y();
+        if(m_hp == HP_Top)//比如当前鼠标位置为屏幕最上面时，将纵坐标拉至鼠标处，此后只改变横坐标
+            move(x-m_relativePos.x(),y);
+        else if(m_hp == HP_Left)
+            move(x,y-m_relativePos.y());
+        else if(m_hp == HP_Right)
+            move(x-width(),y-m_relativePos.y());
+    }
 }
 
 void SubWindow::paintEvent(QPaintEvent *event)
 {
 
+}
+
+void SubWindow::enterEvent(QEvent *event)
+{
+    if(m_hp != HP_None)
+        showWindow();
+}
+
+void SubWindow::leaveEvent(QEvent *event)
+{
+    if(m_hp != HP_None)
+        hideWindow();
 }

@@ -15,6 +15,9 @@
 #include <QSystemTrayIcon>
 #include <QIcon>
 #include <QMenu>
+#include <QFileDialog>
+#include <QDateTime>
+#include <QMessageBox>
 
 
 
@@ -62,6 +65,10 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             if(g_wd->stuta == MainWindow::CutScreenStuta::PAINTING && k.vkCode == 27){
                 delete g_wd->screen_img;
                 g_wd->screen_img = nullptr;
+                g_wd->cut_img_start_x = 0;
+                g_wd->cut_img_start_y = 0;
+                g_wd->cut_img_end_x = 0;
+                g_wd->cut_img_end_y = 0;
                 g_wd->stuta = MainWindow::CutScreenStuta::NONE;
                 g_wd->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
                 ::SetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
@@ -256,7 +263,9 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     qDebug() << "press:x" << event->globalPos().x() << " y:" << event->globalPos().y();
      qDebug() << "press:x" << this->current_mouse_x << " y:" << this->current_mouse_y;
-//    this->stuta = MainWindow::CHOOSING_RECT;
+     this->cut_img_start_x = event->globalPos().x();
+     this->cut_img_start_y = event->globalPos().y();
+    this->stuta = MainWindow::CHOOSING_RECT;
     this->windowPos = this->pos();
     this->mousePos = event->globalPos();
     this->dPos = mousePos - windowPos;
@@ -264,13 +273,54 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    qDebug() << "Release";
+    if(this->stuta == MainWindow::CHOOSING_RECT){
+        this->cut_img_end_x = this->current_mouse_x;
+        this->cut_img_end_y = this->current_mouse_y;
+        this->stuta = MainWindow::CutScreenStuta::NONE;
+        QString fileName = QFileDialog::getSaveFileName(nullptr,
+                ("save file"),
+                "",
+                ("save (*.png)"));
+
+        if (!fileName.isNull())
+        {
+            int width = this->cut_img_end_x - this->cut_img_start_x;
+            int height = this->cut_img_end_y - this->cut_img_start_y;
+            QRect rect(this->cut_img_start_x, this->cut_img_start_y, width, height);
+            QPixmap cropped = this->screen_img->copy(rect);
+
+            this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
+            ::SetWindowLong((HWND)this->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)this->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            delete this->screen_img;
+            this->screen_img = nullptr;
+            this->cut_img_start_x = 0;
+            this->cut_img_start_y = 0;
+            this->cut_img_end_x = 0;
+            this->cut_img_end_y = 0;
+            if(!cropped.save(fileName, "png"))
+            {
+                QMessageBox::critical(nullptr, "error",
+                                                    "save image error!",
+                                                    QMessageBox::Ignore);
+            } else {
+
+                QMessageBox::information(nullptr, "success", "save image success");
+            }
+
+
+        } else {  //cannel save cut image
+            this->stuta = PAINTING;
+            this->cut_img_start_x = 0;
+            this->cut_img_start_y = 0;
+            this->cut_img_end_x = 0;
+            this->cut_img_end_y = 0;
+        }
+    }
 }
 
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
 //    this->move(event->globalPos() - this->dPos);
-    qDebug() << "move";
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -297,6 +347,22 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if(this->screen_img != nullptr){
         QPainter painter(this);
         painter.drawPixmap(0, 0, width(), height(), *this->screen_img);
+    }
+
+    if(this->stuta == CHOOSING_RECT){
+        QPainter painter(this);
+        painter.setBrush(Qt::red);
+        painter.setPen(Qt::red);
+
+        QPoint left_up(this->cut_img_start_x, this->cut_img_start_y);
+        QPoint left_down(this->cut_img_start_x, this->current_mouse_y);
+        QPoint right_up(this->current_mouse_x, this->cut_img_start_y);
+        QPoint right_down(this->current_mouse_x, this->current_mouse_y);
+
+        painter.drawLine(left_up, left_down);
+        painter.drawLine(left_up, right_up);
+        painter.drawLine(left_down, right_down);
+        painter.drawLine(right_up, right_down);
     }
 }
 
