@@ -27,6 +27,9 @@ int main(int argc, char *argv[])
 
 
     QObject::connect(float_pan.key_log_btn, &QPushButton::clicked, [&](){
+        if(w.stuta == MainWindow::CutScreenStuta::PAINTING){
+            return;
+        }
         float_pan.key_log = !float_pan.key_log;
         w.key_log = !w.key_log;
         if(float_pan.key_log){
