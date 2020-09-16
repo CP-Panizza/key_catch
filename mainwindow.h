@@ -14,6 +14,9 @@
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
+#include <QImage>
+#include <functional>
+
 
 
 #define SHOW_TIME 5000
@@ -43,12 +46,16 @@ public:
 
     void hold_screen(QPixmap &screen_img);
 
+    void init_canvas();
 
-    enum CutScreenStuta{
-        NONE,
-        PAINTING,
-        CHOOSING_RECT,
-        CHOOSE_DONE
+
+    enum ScreenStuta{
+        NONE = 0,   //no statu
+        PAINTING = 1,  // cap screen
+        CHOOSING_RECT = 2,  // choose cap screen
+        DRAWING = 3,        // using pan
+        DRAW_DONE_PAINTING = 4,
+        DRAW_DONE_CHOOSING_RECT = 5  //use pan after cap screen
     };
 
 protected:
@@ -65,12 +72,6 @@ public slots:
     void active_tray();
 
 private:
-
-    QPoint windowPos;
-    QPoint mousePos;
-    QPoint dPos;
-
-
     Matrix<int> *welcome_img = nullptr;
 
 public:
@@ -108,13 +109,19 @@ public:
 
     QPixmap *screen_img = nullptr;
 
-    CutScreenStuta stuta = CutScreenStuta::NONE;
+    ScreenStuta stuta = ScreenStuta::NONE;
 
     int cut_img_start_x = 0;
     int cut_img_start_y = 0;
     int cut_img_end_x = 0;
     int cut_img_end_y = 0;
 
+    QImage *canvas = nullptr;
+
+    QPoint lastPoint;
+    QPoint endPoint;
+
+    std::function<void()> float_pan_cb = nullptr;
 };
 
 extern MainWindow *g_wd;

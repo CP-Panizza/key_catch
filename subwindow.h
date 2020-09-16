@@ -43,6 +43,7 @@ public:
     QPushButton *key_log_btn;
 
     QPushButton *cut_btn;
+    QPushButton *pan_btn;
 
     bool cut_screen = false;
     bool key_log = true;

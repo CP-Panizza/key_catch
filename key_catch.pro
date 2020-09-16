@@ -21,6 +21,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     subwindow.cpp \
+    ttipwidget.cpp \
     utils.cpp
 
 HEADERS += \
@@ -29,6 +30,7 @@ HEADERS += \
     mainwindow.h \
     matrix.hpp \
     subwindow.h \
+    ttipwidget.h \
     utils.h
 
 FORMS += \

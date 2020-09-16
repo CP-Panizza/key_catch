@@ -18,7 +18,11 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QMessageBox>
-
+#include <cmath>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QPainterPath>
+#include "ttipwidget.h"
 
 
 
@@ -30,13 +34,6 @@ DWORD last_key = 0;
 bool long_tap = false;
 bool shift_down = false;
 
-
-bool is_top_most(HWND hwnd){
-    if (::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST){
-        return true;
-    }
-    return false;
-}
 
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -62,16 +59,20 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 shift_down = false;
             }
         } else if(wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-            if(g_wd->stuta == MainWindow::CutScreenStuta::PAINTING && k.vkCode == 27){
+            if((g_wd->stuta == MainWindow::PAINTING || g_wd->stuta == MainWindow::DRAWING || g_wd->stuta == MainWindow::DRAW_DONE_PAINTING) && k.vkCode == 27){
                 delete g_wd->screen_img;
                 g_wd->screen_img = nullptr;
                 g_wd->cut_img_start_x = 0;
                 g_wd->cut_img_start_y = 0;
                 g_wd->cut_img_end_x = 0;
                 g_wd->cut_img_end_y = 0;
-                g_wd->stuta = MainWindow::CutScreenStuta::NONE;
-                g_wd->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
-                ::SetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+                if(g_wd->stuta == MainWindow::PAINTING || g_wd->stuta == MainWindow::DRAWING){
+                      g_wd->stuta = MainWindow::NONE;
+                      g_wd->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
+                      ::SetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+                } else if(g_wd->stuta == MainWindow::DRAW_DONE_PAINTING){
+                      g_wd->stuta = MainWindow::DRAWING;
+                }
             }
 //            qDebug() << "vkCode:" << k.vkCode;
             time_t enter_time = clock();
@@ -259,24 +260,52 @@ void MainWindow::hold_screen(QPixmap &screen_img)
     }
 }
 
+void MainWindow::init_canvas()
+{
+    if(this->canvas != nullptr){
+        delete this->canvas;
+        this->canvas = nullptr;
+    }
+
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QPixmap screen_img = screen->grabWindow(0);
+    this->canvas = new QImage(screen_img.toImage());
+
+}
+
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    qDebug() << "press:x" << event->globalPos().x() << " y:" << event->globalPos().y();
-     qDebug() << "press:x" << this->current_mouse_x << " y:" << this->current_mouse_y;
-     this->cut_img_start_x = event->globalPos().x();
-     this->cut_img_start_y = event->globalPos().y();
-    this->stuta = MainWindow::CHOOSING_RECT;
-    this->windowPos = this->pos();
-    this->mousePos = event->globalPos();
-    this->dPos = mousePos - windowPos;
+    if(this->stuta == DRAWING){
+        if(event->button() == Qt::LeftButton)
+        {
+            lastPoint = event->pos();
+        }
+        return;
+    }
+
+    this->cut_img_start_x = event->globalPos().x();
+    this->cut_img_start_y = event->globalPos().y();
+
+    if(this->stuta == MainWindow::PAINTING){
+        this->stuta = MainWindow::CHOOSING_RECT;
+    } else if(this->stuta == MainWindow::DRAW_DONE_PAINTING){
+        this->stuta = MainWindow::DRAW_DONE_CHOOSING_RECT;
+    }
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(this->stuta == MainWindow::CHOOSING_RECT){
+    if(this->stuta == MainWindow::CHOOSING_RECT || this->stuta == MainWindow::DRAW_DONE_CHOOSING_RECT){
+        qDebug() << "choose done";
         this->cut_img_end_x = this->current_mouse_x;
         this->cut_img_end_y = this->current_mouse_y;
-        this->stuta = MainWindow::CutScreenStuta::NONE;
+        if(this->stuta == MainWindow::CHOOSING_RECT){
+            this->stuta = MainWindow::ScreenStuta::NONE;
+        } else if(this->stuta == MainWindow::DRAW_DONE_CHOOSING_RECT){
+            this->stuta = MainWindow::DRAWING;
+        }
+
         QString fileName = QFileDialog::getSaveFileName(nullptr,
                 ("save file"),
                 "",
@@ -284,43 +313,65 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
         if (!fileName.isNull())
         {
-            int width = this->cut_img_end_x - this->cut_img_start_x;
-            int height = this->cut_img_end_y - this->cut_img_start_y;
-            QRect rect(this->cut_img_start_x, this->cut_img_start_y, width, height);
+            int width = ::abs(this->cut_img_end_x - this->cut_img_start_x);
+            int height = ::abs(this->cut_img_end_y - this->cut_img_start_y);
+            int start_x = this->cut_img_start_x < this->cut_img_end_x ? this->cut_img_start_x : this->cut_img_end_x;
+            int start_y = this->cut_img_start_y < this->cut_img_end_y ? this->cut_img_start_y : this->cut_img_end_y;
+            QRect rect(start_x, start_y, width, height);
             QPixmap cropped = this->screen_img->copy(rect);
+            if(this->stuta == MainWindow::NONE){
+                this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
+                ::SetWindowLong((HWND)this->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)this->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            }
 
-            this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
-            ::SetWindowLong((HWND)this->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)this->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
-            delete this->screen_img;
-            this->screen_img = nullptr;
+            if(!cropped.save(fileName, "png"))
+            {
+                TTipWidget::ShowMassage(this, "save image error!");
+            } else {
+                TTipWidget::ShowMassage(this,"save image successed!");
+            }
+            if(this->screen_img != nullptr){
+                delete this->screen_img;
+                this->screen_img = nullptr;
+            }
             this->cut_img_start_x = 0;
             this->cut_img_start_y = 0;
             this->cut_img_end_x = 0;
             this->cut_img_end_y = 0;
-            if(!cropped.save(fileName, "png"))
-            {
-                QMessageBox::critical(nullptr, "error",
-                                                    "save image error!",
-                                                    QMessageBox::Ignore);
-            } else {
-
-                QMessageBox::information(nullptr, "success", "save image success");
-            }
 
 
         } else {  //cannel save cut image
-            this->stuta = PAINTING;
+            qDebug() << "cannel save cut image";
+            if(this->stuta == MainWindow::NONE){
+                this->stuta = MainWindow::PAINTING;
+            } else if(this->stuta == MainWindow::DRAWING){
+                this->stuta = MainWindow::DRAW_DONE_PAINTING;
+            }
             this->cut_img_start_x = 0;
             this->cut_img_start_y = 0;
             this->cut_img_end_x = 0;
             this->cut_img_end_y = 0;
+            TTipWidget::ShowMassage(this,"esc to quit!");
         }
+    }
+
+    if(this->stuta == MainWindow::DRAWING){  //when a drawing done,mouse release,active float_pan
+        this->float_pan_cb();
     }
 }
 
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
-//    this->move(event->globalPos() - this->dPos);
+
+    if(this->stuta == DRAWING){
+        if(event->buttons()&Qt::LeftButton){
+            QPainter painter(this->canvas);
+            painter.setPen(QPen(Qt::red, 5));
+            endPoint = event->pos();
+            painter.drawLine(lastPoint,endPoint);
+            lastPoint = endPoint;
+        }
+    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -344,12 +395,29 @@ void MainWindow::paintEvent(QPaintEvent *event)
         }
     }
 
-    if(this->screen_img != nullptr){
+    if(this->screen_img != nullptr && (this->stuta == MainWindow::PAINTING || this->stuta == MainWindow::DRAW_DONE_PAINTING)){
+        QPixmap img(":/cut.png");
+        QPixmap r = img.scaled(20, 20);
+        this->setCursor(QCursor(r, -1 , -1));
         QPainter painter(this);
         painter.drawPixmap(0, 0, width(), height(), *this->screen_img);
     }
 
-    if(this->stuta == CHOOSING_RECT){
+
+
+    if((this->stuta == DRAWING || this->stuta == DRAW_DONE_CHOOSING_RECT || this->stuta == DRAW_DONE_PAINTING) && this->canvas != nullptr){
+        if(this->stuta == DRAWING){
+            QPixmap img(":/pan.png");
+            QPixmap r = img.scaled(20, 20);
+            this->setCursor(QCursor(r, 0 , 15));
+        }
+
+        QPainter painter(this);
+        painter.drawImage(0,0, *this->canvas);
+    }
+
+    if(this->stuta == CHOOSING_RECT || this->stuta == MainWindow::DRAW_DONE_CHOOSING_RECT){
+        qDebug() << "chooseing";
         QPainter painter(this);
         painter.setBrush(Qt::red);
         painter.setPen(Qt::red);

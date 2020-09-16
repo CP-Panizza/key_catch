@@ -9,5 +9,6 @@
         <file>_cut.png</file>
         <file>_kb.png</file>
         <file>shut.png</file>
+        <file>pan.png</file>
     </qresource>
 </RCC>

@@ -7,19 +7,20 @@
 #include <QPainter>
 #include <QBitmap>
 #include <QPushButton>
-
+#include <QTimer>
 #include <QPropertyAnimation>
 #include <QApplication>
 #include <QScreen>
 #include <QDesktopWidget>
 #include <QDebug>
+#include "windows.h"
 
 SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
 {
     QRect rect = QApplication::desktop()->screenGeometry();
     m_screenWidth = rect.width();
     this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
-    this->setFixedSize(150,100);
+    this->setFixedSize(115,135);
     QFrame *frame = new QFrame(this);
     frame->setStyleSheet("QFrame{background-color: rgb(255, 255, 255);border-radius:10px}"); //设置圆角与背景透明
     frame->setGeometry(5, 5, this->width() - 15, this->height() - 15);//设置有效范围框
@@ -31,10 +32,11 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->setAttribute(Qt::WA_TranslucentBackground);
 
 
+
     QLabel *title = new QLabel(this);
     title->setText("Key Catch");
     title->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
-    title->move(40, 15);
+    title->move(23, 15);
     title->show();
 
 
@@ -49,15 +51,21 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->cut_btn = new QPushButton(this);
     this->cut_btn->setStyleSheet("border-image:url(:/cut.png); width:30px; height: 30px;");
     this->cut_btn->setFlat(true);
-    this->cut_btn->move(60, 40);
+    this->cut_btn->move(60, 43);
     this->cut_btn->setFocusPolicy(Qt::NoFocus);
+
+    this->pan_btn = new QPushButton(this);
+    this->pan_btn->setStyleSheet("border-image:url(:/pan.png); width:30px; height: 30px;");
+    this->pan_btn->setFlat(true);
+    this->pan_btn->move(20, 80);
+    this->pan_btn->setFocusPolicy(Qt::NoFocus);
 
 
     auto shut_btn = new QPushButton(this);
     shut_btn->setObjectName("shut_btn");
     shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}");
     shut_btn->setFlat(true);
-    shut_btn->move(100, 43);
+    shut_btn->move(63, 83);
     shut_btn->setFocusPolicy(Qt::NoFocus);
     shut_btn->setToolTip("exit");
     connect(shut_btn, &QPushButton::clicked, [](){
