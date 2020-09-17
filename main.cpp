@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
     w.self_hwnd.push_back((HWND)w.winId());
     w.self_hwnd.push_back((HWND)float_pan.winId());
-    w.top_most_hwnd.push_back((HWND)TTipWidget::Instance().winId());
+    w.self_hwnd.push_back((HWND)TTipWidget::Instance().winId());
     w.float_pan_cb = [&](){  //set callback func
         float_pan.activateWindow();
     };
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
 
     QObject::connect(float_pan.pan_btn, &QPushButton::clicked, [&](){
-        TTipWidget::ShowMassage(&w,"hold mouse leftbutton draw, esc to quit!");
+        TTipWidget::ShowMassage(&w,"hold mouse leftbutton draw, mousewheel choose color, esc to quit!");
         open_key_log();
         w.init_canvas();
         ::SetWindowLong((HWND)w.winId(), GWL_EXSTYLE, 256);  //cancel mouse penetrate

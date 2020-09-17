@@ -124,6 +124,9 @@ public:
 
     QPoint lastPoint;
     QPoint endPoint;
+    int draw_color_index = 0;
+    std::vector<Qt::GlobalColor> draw_pan_colors{Qt::red, Qt::blue, Qt::black, Qt::white};
+    std::vector<QString> draw_pan_colors_name{"red", "blue", "black","white"};
 
     std::function<void()> float_pan_cb = nullptr;
 

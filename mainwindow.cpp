@@ -150,8 +150,18 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         g_wd->current_mouse_y = hook_struct->pt.y;
     }
 
-    if(g_wd->stuta == MainWindow::DRIVING_NAIL){
-        SetCursor(LoadCursor(NULL,IDC_HAND));
+    if(wParam == WM_MOUSEWHEEL && g_wd->stuta == MainWindow::DRAWING){
+//        qDebug() << "wParam:" << wParam;
+        short x = HIWORD(hook_struct->mouseData);
+//        qDebug() << "x:" << x;
+//        qDebug() << hook_struct->flags << " " << hook_struct->mouseData << " " << hook_struct->dwExtraInfo;
+        if(x > 0){
+            g_wd->draw_color_index = ++g_wd->draw_color_index % g_wd->draw_pan_colors.size();
+            TTipWidget::ShowMassage(g_wd, g_wd->draw_pan_colors_name[g_wd->draw_color_index]);
+        } else {
+            g_wd->draw_color_index = --g_wd->draw_color_index % g_wd->draw_pan_colors.size();
+            TTipWidget::ShowMassage(g_wd, g_wd->draw_pan_colors_name[g_wd->draw_color_index]);
+        }
     }
 
     if(wParam == WM_LBUTTONDOWN && g_wd->stuta == MainWindow::DRIVING_NAIL){
@@ -437,7 +447,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
     if(this->stuta == DRAWING){
         if(event->buttons()&Qt::LeftButton){
             QPainter painter(this->canvas);
-            painter.setPen(QPen(Qt::red, 5));
+            painter.setPen(QPen(this->draw_pan_colors[draw_color_index], 5));
             endPoint = event->pos();
             painter.drawLine(lastPoint,endPoint);
             lastPoint = endPoint;
