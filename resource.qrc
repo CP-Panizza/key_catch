@@ -10,5 +10,6 @@
         <file>_kb.png</file>
         <file>shut.png</file>
         <file>pan.png</file>
+        <file>nail.png</file>
     </qresource>
 </RCC>

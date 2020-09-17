@@ -1,4 +1,4 @@
-#ifndef SUBWINDOW_H
+﻿#ifndef SUBWINDOW_H
 #define SUBWINDOW_H
 
 #include <QWidget>
@@ -6,6 +6,7 @@
 #include <QPaintEvent>
 #include <QPushButton>
 
+#define HOVER_BORDER QString("QPushButton:hover{border: 1px solid black;}")
 
 enum HIDEPOSATION //hide position
 {
@@ -44,6 +45,8 @@ public:
 
     QPushButton *cut_btn;
     QPushButton *pan_btn;
+
+    QPushButton *nail_btn;
 
     bool cut_screen = false;
     bool key_log = true;

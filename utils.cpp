@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by Administrator on 2020/6/3.
 //
 
@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <sstream>
 #include <random>
+
 
 std::vector<std::string> split(std::string str, std::string pattern) {
     std::string::size_type pos;

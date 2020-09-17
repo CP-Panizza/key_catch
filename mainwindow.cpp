@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QPainter>
@@ -23,7 +23,7 @@
 #include <QScreen>
 #include <QPainterPath>
 #include "ttipwidget.h"
-
+#include <chrono>
 
 
 HHOOK g_hHook = nullptr;
@@ -33,6 +33,8 @@ time_t last_enter_time = 0;
 DWORD last_key = 0;
 bool long_tap = false;
 bool shift_down = false;
+
+
 
 
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -135,6 +137,10 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(g_hHook, nCode, wParam, lParam);
 }
 
+
+
+
+
 LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     PMSLLHOOKSTRUCT hook_struct = (PMSLLHOOKSTRUCT)lParam;
@@ -143,6 +149,57 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         g_wd->current_mouse_x = hook_struct->pt.x;
         g_wd->current_mouse_y = hook_struct->pt.y;
     }
+
+    if(g_wd->stuta == MainWindow::DRIVING_NAIL){
+        SetCursor(LoadCursor(NULL,IDC_HAND));
+    }
+
+    if(wParam == WM_LBUTTONDOWN && g_wd->stuta == MainWindow::DRIVING_NAIL){
+        POINT point;
+        if(GetCursorPos(&point)){
+            HWND hwnd = WindowFromPoint(point);
+            if(hwnd == NULL || hwnd == INVALID_HANDLE_VALUE){
+
+            } else {
+                if(have(g_wd->self_hwnd, hwnd)){
+                     TTipWidget::ShowMassage(g_wd, "can not set self pos!");
+                    goto end;
+                }
+
+
+                if(have(g_wd->top_most_hwnd, hwnd)){
+                    TTipWidget::ShowMassage(g_wd, "cancel top successed!");
+                    g_wd->m_mutex.lock();
+                    std::vector<HWND>::iterator temp_it;
+                    for(auto it = g_wd->top_most_hwnd.begin(); it != g_wd->top_most_hwnd.end(); it++){
+                        if(*it == hwnd){
+                            temp_it = it;
+                            break;
+                        }
+                    }
+                    g_wd->top_most_hwnd.erase(temp_it);
+                    ::SetWindowPos(hwnd, HWND_NOTOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+                    g_wd->m_mutex.unlock();
+                    goto end;
+                } else if(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST){
+                    qDebug() << "already top:" << hwnd;
+                     TTipWidget::ShowMassage(g_wd, "cancel top successed!");
+                    ::SetWindowPos(hwnd, HWND_NOTOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+                    goto end;
+                }
+                qDebug() << "set top:" << hwnd;
+                TTipWidget::ShowMassage(g_wd, "set top successed!");
+                g_wd->m_mutex.lock();
+                if(!have(g_wd->top_most_hwnd, hwnd)){
+                    g_wd->top_most_hwnd.push_back(hwnd);
+                }
+                g_wd->m_mutex.unlock();
+            }
+        }
+    } else if(wParam == WM_LBUTTONUP && g_wd->stuta == MainWindow::DRIVING_NAIL){
+        g_wd->stuta = MainWindow::NONE;
+    }
+    end:
     return CallNextHookEx(g_hHook_mous, nCode, wParam, lParam);
 }
 
@@ -173,6 +230,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     g_wd = this;
 
+    sht_hwnd_top_thread = new std::thread([this](){
+        while(true){
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            this->m_mutex.lock();
+            for(auto &hwnd : this->top_most_hwnd){
+                if(this->stuta == MainWindow::NONE){
+                    ::SetWindowPos(hwnd, HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+                } else {
+                    ::SetWindowPos(hwnd, HWND_NOTOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+                }
+            }
+            this->m_mutex.unlock();
+        }
+    });
+    sht_hwnd_top_thread->detach();
     this->load_data();
     g_hHook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)KeyboardProc, GetModuleHandle(NULL), 0);
     if(g_hHook == nullptr){
@@ -341,7 +413,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 
         } else {  //cannel save cut image
-            qDebug() << "cannel save cut image";
             if(this->stuta == MainWindow::NONE){
                 this->stuta = MainWindow::PAINTING;
             } else if(this->stuta == MainWindow::DRAWING){
@@ -351,7 +422,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
             this->cut_img_start_y = 0;
             this->cut_img_end_x = 0;
             this->cut_img_end_y = 0;
-            TTipWidget::ShowMassage(this,"esc to quit!");
+            TTipWidget::ShowMassage(this,"cancel save cap image, esc to quit!");
         }
     }
 

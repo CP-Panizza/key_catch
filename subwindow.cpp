@@ -1,4 +1,4 @@
-#include "subwindow.h"
+﻿#include "subwindow.h"
 #include <QMouseEvent>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -20,7 +20,7 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     QRect rect = QApplication::desktop()->screenGeometry();
     m_screenWidth = rect.width();
     this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
-    this->setFixedSize(115,135);
+    this->setFixedSize(115,180);
     QFrame *frame = new QFrame(this);
     frame->setStyleSheet("QFrame{background-color: rgb(255, 255, 255);border-radius:10px}"); //设置圆角与背景透明
     frame->setGeometry(5, 5, this->width() - 15, this->height() - 15);//设置有效范围框
@@ -35,35 +35,42 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
 
     QLabel *title = new QLabel(this);
     title->setText("Key Catch");
-    title->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
-    title->move(23, 15);
-    title->show();
+//    title->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    title->setStyleSheet("QLabel{color:black;font-size:12px; font-weight:900; text-align:center;}");
+//    title->setAlignment(Qt::AlignCenter);
+    title->move(25, 15);
 
 
 
     this->key_log_btn = new QPushButton(this);
-    this->key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
+    this->key_log_btn->setStyleSheet("QPushButton{border-image:url(:/kb.png); width:30px; height: 30px;}" + HOVER_BORDER);
     this->key_log_btn->setFlat(true);
     this->key_log_btn->move(20, 40);
     this->key_log_btn->setFocusPolicy(Qt::NoFocus);
 
 
     this->cut_btn = new QPushButton(this);
-    this->cut_btn->setStyleSheet("border-image:url(:/cut.png); width:30px; height: 30px;");
+    this->cut_btn->setStyleSheet("QPushButton{border-image:url(:/cut.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->cut_btn->setFlat(true);
     this->cut_btn->move(60, 43);
     this->cut_btn->setFocusPolicy(Qt::NoFocus);
 
     this->pan_btn = new QPushButton(this);
-    this->pan_btn->setStyleSheet("border-image:url(:/pan.png); width:30px; height: 30px;");
+    this->pan_btn->setStyleSheet("QPushButton{border-image:url(:/pan.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->pan_btn->setFlat(true);
     this->pan_btn->move(20, 80);
     this->pan_btn->setFocusPolicy(Qt::NoFocus);
 
+    this->nail_btn = new QPushButton(this);
+    this->nail_btn->setStyleSheet("QPushButton{border-image:url(:/nail.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+    this->nail_btn->setFlat(true);
+    this->nail_btn->move(20, 120);
+    this->nail_btn->setFocusPolicy(Qt::NoFocus);
+
 
     auto shut_btn = new QPushButton(this);
     shut_btn->setObjectName("shut_btn");
-    shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}");
+    shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}"+ HOVER_BORDER);
     shut_btn->setFlat(true);
     shut_btn->move(63, 83);
     shut_btn->setFocusPolicy(Qt::NoFocus);

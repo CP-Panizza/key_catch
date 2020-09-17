@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -16,6 +16,9 @@
 #include <QApplication>
 #include <QImage>
 #include <functional>
+#include <vector>
+#include <thread>
+#include <mutex>
 
 
 
@@ -55,7 +58,8 @@ public:
         CHOOSING_RECT = 2,  // choose cap screen
         DRAWING = 3,        // using pan
         DRAW_DONE_PAINTING = 4,
-        DRAW_DONE_CHOOSING_RECT = 5  //use pan after cap screen
+        DRAW_DONE_CHOOSING_RECT = 5,  //use pan after cap screen
+        DRIVING_NAIL
     };
 
 protected:
@@ -122,6 +126,15 @@ public:
     QPoint endPoint;
 
     std::function<void()> float_pan_cb = nullptr;
+
+
+
+
+
+    std::vector<HWND> self_hwnd; //application's windows
+    std::vector<HWND> top_most_hwnd;
+    std::thread *sht_hwnd_top_thread = nullptr;
+    std::mutex m_mutex;
 };
 
 extern MainWindow *g_wd;

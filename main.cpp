@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -26,6 +26,10 @@ int main(int argc, char *argv[])
 
     SubWindow float_pan;
 
+
+    w.self_hwnd.push_back((HWND)w.winId());
+    w.self_hwnd.push_back((HWND)float_pan.winId());
+    w.top_most_hwnd.push_back((HWND)TTipWidget::Instance().winId());
     w.float_pan_cb = [&](){  //set callback func
         float_pan.activateWindow();
     };
@@ -34,7 +38,7 @@ int main(int argc, char *argv[])
         if(!float_pan.key_log){
             w.key_log = true;
             float_pan.key_log = true;
-            float_pan.key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
+            float_pan.key_log_btn->setStyleSheet("QPushButton{border-image:url(:/kb.png); width:30px; height: 30px;}" + HOVER_BORDER);
         }
     };
     QObject::connect(float_pan.key_log_btn, &QPushButton::clicked, [&](){
@@ -46,11 +50,11 @@ int main(int argc, char *argv[])
         w.key_log = !w.key_log;
         if(float_pan.key_log){
             TTipWidget::ShowMassage(&w, "key log on!");
-            float_pan.key_log_btn->setStyleSheet("border-image:url(:/kb.png); width:30px; height: 30px;");
+            float_pan.key_log_btn->setStyleSheet("QPushButton{border-image:url(:/kb.png); width:30px; height: 30px;}" + HOVER_BORDER);
         } else {
             TTipWidget::ShowMassage(&w, "key log off!");
             w.keylog.clear();
-            float_pan.key_log_btn->setStyleSheet("border-image:url(:/_kb.png); width:30px; height: 30px;");
+            float_pan.key_log_btn->setStyleSheet("QPushButton{border-image:url(:/_kb.png); width:30px; height: 30px;}" + HOVER_BORDER);
         }
     });
 
@@ -79,6 +83,14 @@ int main(int argc, char *argv[])
         w.init_canvas();
         ::SetWindowLong((HWND)w.winId(), GWL_EXSTYLE, 256);  //cancel mouse penetrate
         w.stuta = MainWindow::DRAWING;
+    });
+
+    QObject::connect(float_pan.nail_btn, &QPushButton::clicked, [&](){
+        if(w.stuta != MainWindow::NONE){
+            return;
+        }
+        w.stuta = MainWindow::DRIVING_NAIL;
+        TTipWidget::ShowMassage(&w, "click window toggle top!");
     });
 
 
