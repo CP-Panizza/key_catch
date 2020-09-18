@@ -1,6 +1,9 @@
 # key_catch
 screen key log
 
+# function
+hotkey log, cap screen, screen pen,window top nail
+
 # build
 windows qt5.9.9 MinGW
 
