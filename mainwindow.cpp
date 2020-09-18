@@ -35,8 +35,6 @@ bool long_tap = false;
 bool shift_down = false;
 
 
-
-
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0)
@@ -45,9 +43,6 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
     else if (nCode == HC_ACTION)
     {
-
-
-
         if(!g_wd->key_log){
             return CallNextHookEx(g_hHook, nCode, wParam, lParam);
         }
@@ -90,11 +85,9 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 
             if(last_key == k.vkCode){
-//                qDebug() << "long_tap:" << k.vkCode;
                 long_tap = true;
                 g_wd->keylog.get_end()->show_time = clock();
             } else {
-//                qDebug() << "new key:" << k.vkCode;
                 long_tap = false;
             }
 
@@ -144,17 +137,13 @@ LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     PMSLLHOOKSTRUCT hook_struct = (PMSLLHOOKSTRUCT)lParam;
-//    qDebug() << "x:" << hook_struct->pt.x << " y:" << hook_struct->pt.y;
     if(g_wd != nullptr){
         g_wd->current_mouse_x = hook_struct->pt.x;
         g_wd->current_mouse_y = hook_struct->pt.y;
     }
 
     if(wParam == WM_MOUSEWHEEL && g_wd->stuta == MainWindow::DRAWING){
-//        qDebug() << "wParam:" << wParam;
         short x = HIWORD(hook_struct->mouseData);
-//        qDebug() << "x:" << x;
-//        qDebug() << hook_struct->flags << " " << hook_struct->mouseData << " " << hook_struct->dwExtraInfo;
         if(x > 0){
             g_wd->draw_color_index = ++g_wd->draw_color_index % g_wd->draw_pan_colors.size();
             TTipWidget::ShowMassage(g_wd, g_wd->draw_pan_colors_name[g_wd->draw_color_index]);
@@ -169,10 +158,11 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         if(GetCursorPos(&point)){
             HWND hwnd = WindowFromPoint(point);
             if(hwnd == NULL || hwnd == INVALID_HANDLE_VALUE){
-
+                TTipWidget::ShowMassage(g_wd, "can not get window handle!");
             } else {
+
                 if(have(g_wd->self_hwnd, hwnd)){
-                     TTipWidget::ShowMassage(g_wd, "can not set self pos!");
+                    TTipWidget::ShowMassage(g_wd, "can not set self pos!");
                     goto end;
                 }
 
@@ -192,12 +182,10 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     g_wd->m_mutex.unlock();
                     goto end;
                 } else if(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST){
-                    qDebug() << "already top:" << hwnd;
                      TTipWidget::ShowMassage(g_wd, "cancel top successed!");
                     ::SetWindowPos(hwnd, HWND_NOTOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
                     goto end;
                 }
-                qDebug() << "set top:" << hwnd;
                 TTipWidget::ShowMassage(g_wd, "set top successed!");
                 g_wd->m_mutex.lock();
                 if(!have(g_wd->top_most_hwnd, hwnd)){
@@ -432,7 +420,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
             this->cut_img_start_y = 0;
             this->cut_img_end_x = 0;
             this->cut_img_end_y = 0;
-            TTipWidget::ShowMassage(this,"cancel save cap image, esc to quit!");
+            TTipWidget::ShowMassage(this,"cancel save cap image, <esc> quit!");
         }
     }
 
@@ -476,7 +464,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
         }
     }
 
-    if(this->screen_img != nullptr && (this->stuta == MainWindow::PAINTING || this->stuta == MainWindow::DRAW_DONE_PAINTING)){
+    if(this->screen_img != nullptr && (this->stuta == MainWindow::PAINTING || this->stuta == MainWindow::DRAW_DONE_PAINTING || this->stuta == MainWindow::CHOOSING_RECT || this->stuta == MainWindow::DRAW_DONE_CHOOSING_RECT)){
         QPixmap img(":/cut.png");
         QPixmap r = img.scaled(20, 20);
         this->setCursor(QCursor(r, -1 , -1));
@@ -498,10 +486,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
     }
 
     if(this->stuta == CHOOSING_RECT || this->stuta == MainWindow::DRAW_DONE_CHOOSING_RECT){
-        qDebug() << "chooseing";
         QPainter painter(this);
         painter.setBrush(Qt::red);
-        painter.setPen(Qt::red);
+        painter.setPen(QPen(Qt::red, 2));
 
         QPoint left_up(this->cut_img_start_x, this->cut_img_start_y);
         QPoint left_down(this->cut_img_start_x, this->current_mouse_y);
