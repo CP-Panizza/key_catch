@@ -47,26 +47,28 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->key_log_btn->setFlat(true);
     this->key_log_btn->move(20, 40);
     this->key_log_btn->setFocusPolicy(Qt::NoFocus);
-
+    this->key_log_btn->setToolTip("key_log");
 
     this->cut_btn = new QPushButton(this);
     this->cut_btn->setStyleSheet("QPushButton{border-image:url(:/cut.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->cut_btn->setFlat(true);
     this->cut_btn->move(60, 43);
     this->cut_btn->setFocusPolicy(Qt::NoFocus);
+    this->cut_btn->setToolTip("cap screen");
 
     this->pan_btn = new QPushButton(this);
     this->pan_btn->setStyleSheet("QPushButton{border-image:url(:/pan.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->pan_btn->setFlat(true);
     this->pan_btn->move(20, 80);
     this->pan_btn->setFocusPolicy(Qt::NoFocus);
+    this->pan_btn->setToolTip("pen");
 
     this->nail_btn = new QPushButton(this);
     this->nail_btn->setStyleSheet("QPushButton{border-image:url(:/nail.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->nail_btn->setFlat(true);
     this->nail_btn->move(20, 120);
     this->nail_btn->setFocusPolicy(Qt::NoFocus);
-
+    this->nail_btn->setToolTip("top nail");
 
     auto shut_btn = new QPushButton(this);
     shut_btn->setObjectName("shut_btn");
