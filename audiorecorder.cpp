@@ -48,9 +48,9 @@
 
 #include "audiorecorder.h"
 
-AudioRecorder::AudioRecorder()
+AudioRecorder::AudioRecorder(QWidget *_parent):parent(_parent)
 {
-    audioRecorder = new QAudioRecorder(this);
+    audioRecorder = new QAudioRecorder(parent);
     probe = new QAudioProbe;
     probe->setSource(audioRecorder);
 }
@@ -71,10 +71,10 @@ void AudioRecorder::on_recordButton_clicked()
 void AudioRecorder::on_stopButton_clicked()
 {
 
-    QString fileName = QFileDialog::getSaveFileName(this,
-            tr("output"),
+    QString fileName = QFileDialog::getSaveFileName(this->parent,
+            "output",
             "",
-            tr("Save Files (*.wav *.mp3)"));
+            "Save Files (*.wav *.mp3)");
     if (!fileName.isNull())
     {
         QStringList v = fileName.split(".");
@@ -150,7 +150,7 @@ void AudioRecorder::startRecord()
             format = audioDeviceInfo.nearestFormat(format);
         }
 
-        m_audioInput = new QAudioInput(format, this);
+        m_audioInput = new QAudioInput(format, this->parent);
         m_audioInput->start(&cacheFile);
     }
     else
@@ -172,9 +172,9 @@ void AudioRecorder::stopRecord()
     }
 
     if(addWavHeader()){
-        QMessageBox::information(NULL, tr("Record"), tr("save file success!"));
+        QMessageBox::information(NULL, "Record", "save file success!");
     } else {
-         QMessageBox::information(NULL, tr("Record"), tr("save file err!"));
+         QMessageBox::information(NULL, "Record", "save file err!");
     }
 }
 

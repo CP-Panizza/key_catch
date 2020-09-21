@@ -88,7 +88,7 @@ struct WAVFILEHEADER
 
 class AudioRecorder {
 public:
-    AudioRecorder();
+    AudioRecorder(QWidget *parent = nullptr);
     ~AudioRecorder();
 private slots:
     void on_recordButton_clicked();
@@ -105,6 +105,7 @@ private slots:
     bool addWavHeader();
 
 private:
+    QWidget *parent = nullptr;
     QAudioRecorder *audioRecorder;
     QAudioProbe *probe;
     QList<QAudioLevel*> audioLevels;
