@@ -90,7 +90,7 @@ class AudioRecorder {
 public:
     AudioRecorder(QWidget *parent = nullptr);
     ~AudioRecorder();
-private slots:
+
     void on_recordButton_clicked();
 
     void on_stopButton_clicked();

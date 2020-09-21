@@ -74,7 +74,7 @@ void AudioRecorder::on_stopButton_clicked()
     QString fileName = QFileDialog::getSaveFileName(this->parent,
             "output",
             "",
-            "Save Files (*.wav *.mp3)");
+            "Save Files (*.wav)");
     if (!fileName.isNull())
     {
         QStringList v = fileName.split(".");

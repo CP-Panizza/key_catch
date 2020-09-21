@@ -15,6 +15,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include "ttipwidget.h"
+#include "audiorecorder.h"
 
 
 int main(int argc, char *argv[])
