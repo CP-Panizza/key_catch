@@ -5,6 +5,8 @@
 #include <QPoint>
 #include <QPaintEvent>
 #include <QPushButton>
+#include "screencap.h"
+#include "audiorecorder.h"
 
 #define HOVER_BORDER QString("QPushButton:hover{border: 1px solid black;}")
 
@@ -48,6 +50,8 @@ public:
 
     QPushButton *nail_btn;
 
+    QPushButton *record_btn;
+
     bool cut_screen = false;
     bool key_log = true;
 
@@ -55,6 +59,8 @@ public:
     bool m_isLMousePress;
     QPoint m_relativePos;
     HIDEPOSATION m_hp = HP_None;
+
+    bool is_record = false;
 };
 
 #endif // SUBWINDOW_H

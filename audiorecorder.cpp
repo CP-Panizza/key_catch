@@ -45,6 +45,7 @@
 #include <QMediaRecorder>
 #include <QTextCodec>
 #include <QMessageBox>
+#include <QApplication>
 
 #include "audiorecorder.h"
 
@@ -62,68 +63,16 @@ AudioRecorder::~AudioRecorder()
 }
 
 
-
-void AudioRecorder::on_recordButton_clicked()
-{
-    this->startRecord();
-}
-
-void AudioRecorder::on_stopButton_clicked()
-{
-
-    QString fileName = QFileDialog::getSaveFileName(this->parent,
-            "output",
-            "",
-            "Save Files (*.wav)");
-    if (!fileName.isNull())
-    {
-        QStringList v = fileName.split(".");
-        if(v.size() != 2){
-            qDebug() << "File path not ok;\n" ;
-            return;
-        }
-        this->setFilePath(v[0]);
-    }
-    else
-    {
-        if (this->m_audioInput != nullptr)
-        {
-            this->m_audioInput->stop();
-            this->cacheFile.close();
-            delete this->m_audioInput;
-            this->m_audioInput = nullptr;
-        }
-        return;
-    }
-    this->stopRecord();
-}
-
-
-
-
-void AudioRecorder::setFilePath(const QString &value)
-{
-    filePath = value;
-}
-
-QString &AudioRecorder::getFilePath()
-{
-    return this->filePath;
-}
-
-QString &AudioRecorder::getCacheFileName()
-{
-    return this->cacheFileName;
-}
-
 void AudioRecorder::startRecord()
 {
+
+    QString strAppDir = QApplication::applicationDirPath();
     // 判断本地设备是否支持该格式
     QAudioDeviceInfo audioDeviceInfo = QAudioDeviceInfo::defaultInputDevice();
     // 判断本地是否有录音设备;
     if (!audioDeviceInfo.isNull())
     {
-        cacheFile.setFileName(this->cacheFileName);
+        cacheFile.setFileName(strAppDir + this->cacheFileName);
         cacheFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
         // 设置音频文件格式;
@@ -167,20 +116,17 @@ void AudioRecorder::stopRecord()
     {
         m_audioInput->stop();
         cacheFile.close();
-        delete m_audioInput;
-        m_audioInput = nullptr;
+        delete this->m_audioInput;
+        this->m_audioInput = nullptr;
     }
 
-    if(addWavHeader()){
-        QMessageBox::information(NULL, "Record", "save file success!");
-    } else {
-         QMessageBox::information(NULL, "Record", "save file err!");
+    if(!addWavHeader()){
+        QMessageBox::information(NULL, "Record", "save file err!");
     }
 }
 
 bool AudioRecorder::addWavHeader()
 {
-
     WAVFILEHEADER WavFileHeader;
     qstrcpy(WavFileHeader.RiffName, "RIFF");
     qstrcpy(WavFileHeader.WavName, "WAVE");
@@ -197,7 +143,8 @@ bool AudioRecorder::addWavHeader()
     WavFileHeader.nBytesPerSecond = simpleRate*simpleSize/8;
     WavFileHeader.nChannleNumber = channelCount;
 
-    QFile wavFile(filePath+".wav");
+    QString strAppDir = QApplication::applicationDirPath();
+    QFile wavFile(strAppDir+"/tmp.wav");
 
     if (!cacheFile.open(QIODevice::ReadWrite))
     {

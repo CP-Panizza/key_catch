@@ -91,15 +91,6 @@ public:
     AudioRecorder(QWidget *parent = nullptr);
     ~AudioRecorder();
 
-    void on_recordButton_clicked();
-
-    void on_stopButton_clicked();
-
-    void setFilePath(const QString &value);
-
-    QString& getFilePath();
-
-    QString &getCacheFileName();
     void startRecord();
     void stopRecord();
     bool addWavHeader();
@@ -110,11 +101,6 @@ private:
     QAudioProbe *probe;
     QList<QAudioLevel*> audioLevels;
 
-
-    QStringList m_fileNames;
-
-
-    QString filePath = "";
     QFile cacheFile;
     int simpleRate = 16000;
     int simpleSize = 16;
@@ -123,7 +109,7 @@ private:
 
     QString outputFormat = "wav";
 
-    QString cacheFileName = "tmp.wav";
+    QString cacheFileName = "/catch.raw";
     QAudioInput* m_audioInput = nullptr;
 };
 

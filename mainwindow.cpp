@@ -22,6 +22,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QPainterPath>
+#include <QObject>
 #include "ttipwidget.h"
 #include <chrono>
 
@@ -301,6 +302,19 @@ MainWindow::MainWindow(QWidget *parent)
     if(this->welcome_img != nullptr){
         this->keylog.add(new Item(this->welcome_img, clock() + 5000));
     }
+
+
+    this->screen_cap = new ScreenCap(this);
+    this->audio_recorder = new AudioRecorder;
+    this->check_creating_video = new QTimer(this);
+    QObject::connect(this->check_creating_video, &QTimer::timeout, [this](){
+        if(!this->creating_video){
+            TTipWidget::ShowMassage(this, "create video at: " + this->create_output_file);
+            this->check_creating_video->stop();
+        } else {
+            TTipWidget::ShowMassage(this, "creating video!");
+        }
+    });
 }
 
 void MainWindow::active_tray()

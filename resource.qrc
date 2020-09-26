@@ -11,5 +11,7 @@
         <file>shut.png</file>
         <file>pan.png</file>
         <file>nail.png</file>
+        <file>record.png</file>
+        <file>recording.png</file>
     </qresource>
 </RCC>

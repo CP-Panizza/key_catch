@@ -1,4 +1,4 @@
-QT += core gui multimedia
+QT += core gui multimedia winextras
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,20 +17,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     audiorecorder.cpp \
+    avilib.c \
     item.cpp \
     keylog.cpp \
     main.cpp \
     mainwindow.cpp \
+    screencap.cpp \
     subwindow.cpp \
     ttipwidget.cpp \
     utils.cpp
 
 HEADERS += \
     audiorecorder.h \
+    avilib.h \
     item.h \
     keylog.h \
     mainwindow.h \
     matrix.hpp \
+    screencap.h \
     subwindow.h \
     ttipwidget.h \
     utils.h

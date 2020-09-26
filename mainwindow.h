@@ -19,6 +19,8 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include "audiorecorder.h"
+#include "screencap.h"
 
 
 
@@ -50,6 +52,7 @@ public:
     void hold_screen(QPixmap &screen_img);
 
     void init_canvas();
+
 
 
     enum ScreenStuta{
@@ -138,6 +141,16 @@ public:
     std::vector<HWND> top_most_hwnd;
     std::thread *sht_hwnd_top_thread = nullptr;
     std::mutex m_mutex;
+
+
+
+    //record
+    ScreenCap *screen_cap = nullptr;
+    AudioRecorder *audio_recorder = nullptr;
+
+    QTimer *check_creating_video = nullptr;
+    bool creating_video = false;
+    QString create_output_file;
 };
 
 extern MainWindow *g_wd;

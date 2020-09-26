@@ -14,8 +14,11 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QMessageBox>
+#include <thread>
+#include <QProcess>
 #include "ttipwidget.h"
 #include "audiorecorder.h"
+#include <time.h>
 
 
 int main(int argc, char *argv[])
@@ -100,6 +103,52 @@ int main(int argc, char *argv[])
         TTipWidget::ShowMassage(&w, "click window toggle top!");
     });
 
+
+    QObject::connect(float_pan.record_btn, &QPushButton::clicked, [&](){
+        float_pan.is_record = !float_pan.is_record;
+        if(float_pan.is_record){
+            TTipWidget::ShowMassage(&w, "start record!");
+            if(w.screen_cap->m_stop){
+                w.screen_cap->m_stop = false;
+            }
+            w.audio_recorder->startRecord();
+            w.screen_cap->start();
+
+            float_pan.record_btn->setToolTip("recording");
+            float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/recording.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+        } else {
+            qDebug() << "stop";
+            w.screen_cap->stop();
+            w.audio_recorder->stopRecord();
+            w.creating_video = true;
+            w.check_creating_video->start(1000);
+            std::thread mix_thread([&](){
+                QString strAppDir = QApplication::applicationDirPath();
+                QProcess proc;
+                QString avi_file = strAppDir + QString("/tmp.avi");
+                QString wav_file = strAppDir + QString("/tmp.wav");
+                QString ffmpeg_file = strAppDir + QString("/ffmpeg.exe");
+                time_t now(0);
+                now = time(NULL);
+                struct tm *timeinfo;
+                timeinfo = localtime(&now);
+                char buf[60];
+                ::strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", timeinfo);
+                QString out_put_file = QString(buf) + "-screen_cap.avi";
+                qDebug() << out_put_file;
+                w.create_output_file = QApplication::applicationDirPath() + "/" + out_put_file;
+                QString cmd = ffmpeg_file +" -y -i " + avi_file + " -i " + wav_file + " -vcodec copy -acodec copy " + out_put_file;
+                qDebug() << cmd;
+                proc.start(cmd);
+                proc.waitForFinished();
+                proc.close();
+                w.creating_video = false;
+            });
+            mix_thread.detach();
+            float_pan.record_btn->setToolTip("record");
+            float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/record.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+        }
+    });
 
     w.show();
     float_pan.show();

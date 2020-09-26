@@ -70,11 +70,19 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->nail_btn->setFocusPolicy(Qt::NoFocus);
     this->nail_btn->setToolTip("top nail");
 
+    this->record_btn = new QPushButton(this);
+    this->record_btn->setStyleSheet("QPushButton{border-image:url(:/record.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+    this->record_btn->setFlat(true);
+     this->record_btn->move(60, 80);
+    this->record_btn->setFocusPolicy(Qt::NoFocus);
+    this->record_btn->setToolTip("record");
+
+
     auto shut_btn = new QPushButton(this);
     shut_btn->setObjectName("shut_btn");
     shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}"+ HOVER_BORDER);
     shut_btn->setFlat(true);
-    shut_btn->move(63, 83);
+    shut_btn->move(63, 123);
     shut_btn->setFocusPolicy(Qt::NoFocus);
     shut_btn->setToolTip("exit");
     connect(shut_btn, &QPushButton::clicked, [](){
