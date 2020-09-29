@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         }
 
         open_key_log();
-        TTipWidget::ShowMassage(&w,"holding <leftbutton> choose, <esc> quit!");
+        TTipWidget::ShowMassage(&w,"holding <leftbutton> choose, <rightbutton/esc> quit!");
         QScreen *screen = QGuiApplication::primaryScreen();
         QPixmap screen_img = screen->grabWindow(0);
         w.hold_screen(screen_img);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
 
     QObject::connect(float_pan.pan_btn, &QPushButton::clicked, [&](){
-        TTipWidget::ShowMassage(&w,"holding <leftbutton> draw, <mousewheel> toggle color, <esc> quit!");
+        TTipWidget::ShowMassage(&w,"holding <leftbutton> draw, <mousewheel> toggle color, <rightbutton/esc> quit!");
         open_key_log();
         w.init_canvas();
         recover_mainwindow_style();
@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
                 ::strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", timeinfo);
                 QString out_put_file = QString(buf) + "-screen_cap.avi";
                 qDebug() << out_put_file;
-                w.create_output_file = QApplication::applicationDirPath() + "/" + out_put_file;
-                QString cmd = ffmpeg_file +" -y -i " + avi_file + " -i " + wav_file + " -vcodec copy -acodec copy " + out_put_file;
+                w.create_output_file = QApplication::applicationDirPath() + "/output/" + out_put_file;
+                QString cmd = ffmpeg_file +" -y -i " + avi_file + " -i " + wav_file + " -vcodec copy -acodec copy " + QString("./output/") + out_put_file;
                 qDebug() << cmd;
                 proc.start(cmd);
                 proc.waitForFinished();
