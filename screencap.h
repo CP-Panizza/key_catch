@@ -26,11 +26,12 @@ public:
     QLibrary *cap_lib = nullptr;
     QByteArray m_buffer;
     bool m_stop = false;
+    bool m_is_return = false;
     QSize m_size;
     QString strAppDir;
     avi_t *FD = nullptr;
 
-    const double m_fps = 7.03;
+    double m_fps = 7.03;
 };
 
 #endif // SCREENCAP_H

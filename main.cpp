@@ -117,12 +117,16 @@ int main(int argc, char *argv[])
             float_pan.record_btn->setToolTip("recording");
             float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/recording.png); width:30px; height: 30px;}"+ HOVER_BORDER);
         } else {
-            qDebug() << "stop";
+
             w.screen_cap->stop();
             w.audio_recorder->stopRecord();
             w.creating_video = true;
             w.check_creating_video->start(1000);
             std::thread mix_thread([&](){
+                while(!w.screen_cap->m_is_return){
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                }
+                qDebug() << "stop";
                 QString strAppDir = QApplication::applicationDirPath();
                 QProcess proc;
                 QString avi_file = strAppDir + QString("/tmp.avi");

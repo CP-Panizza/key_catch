@@ -74,9 +74,11 @@ void ScreenCap::run()
     }
     long avg = totle_take_time / totle_fream;
     double fps = 1000.0 / avg;
+    this->m_fps = fps;
     AVI_set_video(this->FD, this->m_size.width(), this->m_size.height(), fps , QByteArray("MJPG").data());
     AVI_close(this->FD);
     this->FD = nullptr;
+    this->m_is_return = true;
 }
 
 void ScreenCap::stop()

@@ -154,6 +154,24 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
     }
 
+    if(wParam == WM_RBUTTONDOWN){
+        if((g_wd->stuta == MainWindow::PAINTING || g_wd->stuta == MainWindow::DRAWING || g_wd->stuta == MainWindow::DRAW_DONE_PAINTING)){
+            delete g_wd->screen_img;
+            g_wd->screen_img = nullptr;
+            g_wd->cut_img_start_x = 0;
+            g_wd->cut_img_start_y = 0;
+            g_wd->cut_img_end_x = 0;
+            g_wd->cut_img_end_y = 0;
+            if(g_wd->stuta == MainWindow::PAINTING || g_wd->stuta == MainWindow::DRAWING){
+                  g_wd->stuta = MainWindow::NONE;
+                  g_wd->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
+                  ::SetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)g_wd->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            } else if(g_wd->stuta == MainWindow::DRAW_DONE_PAINTING){
+                  g_wd->stuta = MainWindow::DRAWING;
+            }
+        }
+    }
+
     if(wParam == WM_LBUTTONDOWN && g_wd->stuta == MainWindow::DRIVING_NAIL){
         POINT point;
         if(GetCursorPos(&point)){
@@ -434,7 +452,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
             this->cut_img_start_y = 0;
             this->cut_img_end_x = 0;
             this->cut_img_end_y = 0;
-            TTipWidget::ShowMassage(this,"cancel save cap image, <esc> quit!");
+            TTipWidget::ShowMassage(this,"cancel save cap image, <rightbutton/esc> quit!");
         }
     }
 
@@ -460,7 +478,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 void MainWindow::paintEvent(QPaintEvent *event)
 {
 
-    if(this->current_mouse_x != 0 && this->current_mouse_y != 0){
+//    qDebug() << "x:" << this->current_mouse_x << "y:" << this->current_mouse_y;
+    if(this->current_mouse_x >= 0 && this->current_mouse_y >= 0){
         QPainter painter(this);
         painter.setPen(QPen(Qt::transparent,0));
         painter.setBrush(QColor(255,0,0, 70));
