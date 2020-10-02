@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 {
     QApplication::setQuitOnLastWindowClosed(false);
     QApplication a(argc, argv);
+
     MainWindow w;
     w.setApplication(&a);
 
@@ -128,7 +129,17 @@ int main(int argc, char *argv[])
                 }
                 qDebug() << "stop";
                 QString strAppDir = QApplication::applicationDirPath();
+
                 QProcess proc;
+//                QObject::connect(&proc , &QProcess::readyReadStandardOutput , [&](){
+//                    qDebug() << proc.readAllStandardOutput();
+
+//                });
+//                QObject::connect(&proc , &QProcess::readyReadStandardError , [&](){
+//                    qDebug() << proc.readAllStandardError();
+
+//                });
+
                 QString avi_file = strAppDir + QString("/tmp.avi");
                 QString wav_file = strAppDir + QString("/tmp.wav");
                 QString ffmpeg_file = strAppDir + QString("/ffmpeg.exe");
