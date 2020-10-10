@@ -272,22 +272,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     sht_hwnd_top_thread->detach();
     this->load_data();
-    g_hHook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)KeyboardProc, GetModuleHandle(NULL), 0);
-    if(g_hHook == nullptr){
-        qDebug() << "SetWindowsHookEx KeyboardProc err";
-
-    } else {
-        qDebug() << "SetWindowsHookEx KeyboardProc success";
-    }
-
-    g_hHook_mous = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseProc, GetModuleHandle(NULL), 0);
-    if(g_hHook_mous == nullptr){
-        qDebug() << "SetWindowsHookEx MouseProc err";
-    } else {
-        qDebug() << "SetWindowsHookEx MouseProc success";
-    }
-
-
 
 //    QRect deskRect = QApplication::desktop()->availableGeometry();
 
@@ -635,6 +619,27 @@ void MainWindow::load_data()
         qDebug() << "load welcome_img err";
     }
     img_welcome_data.close();
+}
+
+bool MainWindow::set_hook()
+{
+    g_hHook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)KeyboardProc, GetModuleHandle(NULL), 0);
+    if(g_hHook == nullptr){
+        qDebug() << "SetWindowsHookEx KeyboardProc err";
+        return false;
+    } else {
+        qDebug() << "SetWindowsHookEx KeyboardProc success";
+    }
+
+    g_hHook_mous = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseProc, GetModuleHandle(NULL), 0);
+    if(g_hHook_mous == nullptr){
+        qDebug() << "SetWindowsHookEx MouseProc err";
+        return false;
+    } else {
+        qDebug() << "SetWindowsHookEx MouseProc success";
+    }
+
+    return true;
 }
 
 

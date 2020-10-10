@@ -175,6 +175,9 @@ int main(int argc, char *argv[])
         }
     });
 
+    if(!w.set_hook()){
+        a.quit();
+    }
     w.show();
     float_pan.show();
     return a.exec();

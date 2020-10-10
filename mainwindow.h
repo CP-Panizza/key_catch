@@ -53,6 +53,7 @@ public:
 
     void init_canvas();
 
+    bool set_hook();
 
 
     enum ScreenStuta{
@@ -74,6 +75,7 @@ protected:
 
 
     void load_data();
+
     void paint(Matrix<int> *img,int alpha, int x, int y);
 public slots:
     void active_tray();
