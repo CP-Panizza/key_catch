@@ -180,5 +180,7 @@ int main(int argc, char *argv[])
     }
     w.show();
     float_pan.show();
+    ::SetWindowPos(HWND(w.winId()), HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+    ::SetWindowLong(HWND(w.winId()), GWL_EXSTYLE, ::GetWindowLong(HWND(w.winId()), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED); //set window mouse penetrate
     return a.exec();
 }

@@ -283,7 +283,6 @@ MainWindow::MainWindow(QWidget *parent)
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setFixedSize(screenRect.width(), screenRect.height());
 
-    ::SetWindowLong((HWND)winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED); //set window mouse penetrate
     QTimer *qtimer1 = new QTimer(this);
     QObject::connect(qtimer1, &QTimer::timeout,[this]{
         this->repaint();
