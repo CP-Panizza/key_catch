@@ -52,6 +52,8 @@ public:
 
     QPushButton *record_btn;
 
+    QPushButton *sucker_btn;
+
     bool cut_screen = false;
     bool key_log = true;
 

@@ -23,6 +23,7 @@
 #include <QScreen>
 #include <QPainterPath>
 #include <QObject>
+#include <QClipboard>
 #include "ttipwidget.h"
 #include <chrono>
 
@@ -154,6 +155,14 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
     }
 
+    if(wParam == WM_LBUTTONDOWN && g_wd->sucker_color){
+        QClipboard *board = QApplication::clipboard();
+        board->setText(g_wd->clip_border_color_str);
+        g_wd->sucker_color = false;
+        g_wd->show_color_str_timer->stop();
+        TTipWidget::ShowMassage(g_wd, "color have been copied!");
+    }
+
     if(wParam == WM_RBUTTONDOWN){
         if((g_wd->stuta == MainWindow::PAINTING || g_wd->stuta == MainWindow::DRAWING || g_wd->stuta == MainWindow::DRAW_DONE_PAINTING)){
             delete g_wd->screen_img;
@@ -266,6 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
     g_hHook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)KeyboardProc, GetModuleHandle(NULL), 0);
     if(g_hHook == nullptr){
         qDebug() << "SetWindowsHookEx KeyboardProc err";
+
     } else {
         qDebug() << "SetWindowsHookEx KeyboardProc success";
     }
@@ -332,6 +342,28 @@ MainWindow::MainWindow(QWidget *parent)
         } else {
             TTipWidget::ShowMassage(this, "creating video!");
         }
+    });
+
+    this->show_color_str_timer = new QTimer(this);
+    QObject::connect( this->show_color_str_timer, &QTimer::timeout, [this](){
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QPixmap screen_img = screen->grabWindow(0);
+        if(this->color_img != nullptr){
+            delete this->color_img;
+            this->color_img = nullptr;
+        }
+        this->color_img = new QImage(screen_img.toImage());
+        if(this->current_mouse_x >= this->color_img->width() || this->current_mouse_x < 0 ||
+           this->current_mouse_y >= this->color_img->height() || this->current_mouse_y < 0){
+            return;
+        }
+        auto color = this->color_img->pixelColor(this->current_mouse_x, this->current_mouse_y);
+        std::string str_hex_color = rgb2hex(color.red(), color.green(), color.blue());
+        QString str(str_hex_color.data());
+        QString result = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue()) + "  HEX(" + str + ")";
+        this->clip_border_color_str.clear();
+        this->clip_border_color_str = result;
+        TTipWidget::ShowMassage(this, result);
     });
 }
 
@@ -478,13 +510,24 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 void MainWindow::paintEvent(QPaintEvent *event)
 {
 
-//    qDebug() << "x:" << this->current_mouse_x << "y:" << this->current_mouse_y;
-    if(this->current_mouse_x >= 0 && this->current_mouse_y >= 0){
+    if((this->current_mouse_x >= 0 && this->current_mouse_y >= 0) && !this->sucker_color){
         QPainter painter(this);
         painter.setPen(QPen(Qt::transparent,0));
         painter.setBrush(QColor(255,0,0, 70));
         painter.drawEllipse(this->current_mouse_x - (CIRCLE_R / 2), this->current_mouse_y - (CIRCLE_R / 2), CIRCLE_R, CIRCLE_R);
     }
+
+    if(this->sucker_color && this->color_img != nullptr){
+        if(this->current_mouse_x >= this->color_img->width() || this->current_mouse_x < 0 ||
+           this->current_mouse_y >= this->color_img->height() || this->current_mouse_y < 0){
+            goto pass;
+        }
+        auto color = this->color_img->pixelColor(this->current_mouse_x, this->current_mouse_y);
+        QPainter painter(this);
+        painter.setBrush(color);
+        painter.drawRect(this->current_mouse_x - 25, this->current_mouse_y - 25, 20,20);
+    }
+    pass:;
 
     if(this->key_log){
         if(!this->keylog.empty()){
@@ -532,6 +575,15 @@ void MainWindow::paintEvent(QPaintEvent *event)
         painter.drawLine(left_up, right_up);
         painter.drawLine(left_down, right_down);
         painter.drawLine(right_up, right_down);
+
+//        QPainter painter(this);
+        painter.setPen(QPen(Qt::transparent,0));
+        painter.setBrush(QColor(64,65,66, 70));
+        int x = this->cut_img_start_x < this->current_mouse_x ? this->cut_img_start_x : this->current_mouse_x;
+        int y = this->cut_img_start_y < this->current_mouse_y ? this->cut_img_start_y : this->current_mouse_y;
+        painter.drawRect(x, y,
+                         ::abs(this->current_mouse_x - this->cut_img_start_x),
+                         ::abs(this->current_mouse_y - this->cut_img_start_y));
     }
 }
 

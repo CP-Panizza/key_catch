@@ -138,9 +138,9 @@ bool AudioRecorder::addWavHeader()
     qstrcpy(WavFileHeader.DATANAME, "data");
 
     WavFileHeader.nBitsPerSample = simpleSize;
-    WavFileHeader.nBytesPerSample = simpleSize/8;
+    WavFileHeader.nBytesPerSample = channelCount*simpleSize/8;
     WavFileHeader.nSampleRate = simpleRate;
-    WavFileHeader.nBytesPerSecond = simpleRate*simpleSize/8;
+    WavFileHeader.nBytesPerSecond = simpleRate*channelCount*simpleSize/8;
     WavFileHeader.nChannleNumber = channelCount;
 
     QString strAppDir = QApplication::applicationDirPath();

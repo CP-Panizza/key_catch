@@ -151,6 +151,14 @@ public:
     QTimer *check_creating_video = nullptr;
     bool creating_video = false;
     QString create_output_file;
+
+
+
+    //color sucker
+    bool sucker_color = false;
+    QImage *color_img = nullptr;
+    QTimer *show_color_str_timer = nullptr;
+    QString clip_border_color_str;
 };
 
 extern MainWindow *g_wd;

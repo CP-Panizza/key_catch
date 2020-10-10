@@ -20,7 +20,7 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     QRect rect = QApplication::desktop()->screenGeometry();
     m_screenWidth = rect.width();
     this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
-    this->setFixedSize(115,180);
+    this->setFixedSize(115, 210);
     QFrame *frame = new QFrame(this);
     frame->setStyleSheet("QFrame{background-color: rgb(255, 255, 255);border-radius:10px}"); //设置圆角与背景透明
     frame->setGeometry(5, 5, this->width() - 15, this->height() - 15);//设置有效范围框
@@ -70,6 +70,14 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     this->nail_btn->setFocusPolicy(Qt::NoFocus);
     this->nail_btn->setToolTip("top nail");
 
+
+    this->sucker_btn = new QPushButton(this);
+    this->sucker_btn->setStyleSheet("QPushButton{border-image:url(:/sucker.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+    this->sucker_btn->setFlat(true);
+    this->sucker_btn->move(60, 120);
+    this->sucker_btn->setFocusPolicy(Qt::NoFocus);
+    this->sucker_btn->setToolTip("color sucker");
+
     this->record_btn = new QPushButton(this);
     this->record_btn->setStyleSheet("QPushButton{border-image:url(:/record.png); width:30px; height: 30px;}"+ HOVER_BORDER);
     this->record_btn->setFlat(true);
@@ -82,7 +90,7 @@ SubWindow::SubWindow(QWidget *parent) : QWidget(parent)
     shut_btn->setObjectName("shut_btn");
     shut_btn->setStyleSheet("QPushButton#shut_btn{border-image:url(:/shut.png); width:25px; height: 25px;}"+ HOVER_BORDER);
     shut_btn->setFlat(true);
-    shut_btn->move(63, 123);
+    shut_btn->move(23, 160);
     shut_btn->setFocusPolicy(Qt::NoFocus);
     shut_btn->setToolTip("exit");
     connect(shut_btn, &QPushButton::clicked, [](){

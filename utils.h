@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by Administrator on 2020/6/4.
 //
 
@@ -18,6 +18,8 @@ bool have(std::vector<T> &src, T target){
     }
     return false;
 }
+
+std::string rgb2hex(int r, int g, int b);
 
 std::vector<std::string> split(std::string str, std::string pattern);
 

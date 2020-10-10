@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         }
 
         open_key_log();
-        TTipWidget::ShowMassage(&w,"holding <leftbutton> choose, <rightbutton/esc> quit!");
+        TTipWidget::ShowMassage(&w,"hold <leftbutton> choose, <rightbutton/esc> quit!");
         QScreen *screen = QGuiApplication::primaryScreen();
         QPixmap screen_img = screen->grabWindow(0);
         w.hold_screen(screen_img);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
 
     QObject::connect(float_pan.pan_btn, &QPushButton::clicked, [&](){
-        TTipWidget::ShowMassage(&w,"holding <leftbutton> draw, <mousewheel> toggle color, <rightbutton/esc> quit!");
+        TTipWidget::ShowMassage(&w,"hold <leftbutton> draw, <mousewheel> toggle color, <rightbutton/esc> quit!");
         open_key_log();
         w.init_canvas();
         recover_mainwindow_style();
@@ -162,6 +162,16 @@ int main(int argc, char *argv[])
             mix_thread.detach();
             float_pan.record_btn->setToolTip("record");
             float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/record.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+        }
+    });
+
+    QObject::connect(float_pan.sucker_btn, &QPushButton::clicked, [&](){
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        w.sucker_color = !w.sucker_color;
+        if(w.sucker_color){
+            w.show_color_str_timer->start(500);
+        } else {
+            w.show_color_str_timer->stop();
         }
     });
 

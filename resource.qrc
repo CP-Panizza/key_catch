@@ -13,5 +13,6 @@
         <file>nail.png</file>
         <file>record.png</file>
         <file>recording.png</file>
+        <file>sucker.png</file>
     </qresource>
 </RCC>
