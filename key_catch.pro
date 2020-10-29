@@ -46,6 +46,9 @@ HEADERS += \
     ttipwidget.h \
     utils.h
 
+
+INCLUDEPATH += C:\Users\cmj\Desktop\Qt\key_catch_new\dep
+
 FORMS += \
     mainwindow.ui
 

@@ -9,6 +9,7 @@
 #include "avilib.h"
 #include <queue>
 #include "spin_mutex.h"
+#include <mutex>
 
 struct Fream{
     Fream():data(nullptr){}
@@ -43,16 +44,22 @@ public:
     FreeBuffer free_buffer = nullptr;
     QLibrary *cap_lib = nullptr;
     QByteArray m_buffer;
-    bool m_stop = false;
+    bool m_stop = false;  //stop to capture
     bool m_is_return = false;
     QSize m_size;
     QString strAppDir;
     avi_t *FD = nullptr;
 
+    const bool isRGB      = true;  // true = RGB image, else false = grayscale
+    int quality             = 80;    // compression quality: 0 = worst, 100 = best, 80 to 90 are most often used
+    const bool downsample = true; // false = save as YCbCr444 JPEG (better quality), true = YCbCr420 (smaller file)
+    size_t thread_pool_size = 2;
     double m_fps = 10;
 
+    bool handle_done = false;
     std::queue<Fream> record_data;
-    spin_mutex m_mutex;
+    std::mutex m_mutex;
+//    spin_mutex m_mutex;
 };
 
 

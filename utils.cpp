@@ -11,6 +11,9 @@
 #include <random>
 #include <vector>
 #include <map>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <fstream>
 
 
 std::map<int, std::string> val_map{
@@ -175,6 +178,47 @@ bool is_special_dir(const char *path)
         show_error();//若路径不存在，显示错误信息
     }
 }
+
+
+ bool file_exists(const std::string &name) {
+     std::ifstream f(name.c_str());
+     return f.good();
+ }
+
+
+ bool dir_exists(std::string path) {
+     DIR *dir;
+     if ((dir = opendir(path.c_str())) == NULL) {
+         return false;
+     }
+     closedir(dir);
+     return true;
+ }
+
+ long file_size(const char *filepath) {
+     struct stat info{};
+     stat(filepath, &info);
+     int size = info.st_size;
+     return size;
+ }
+
+ void trim_space(std::string &s) {
+     int index = 0;
+     if (!s.empty()) {
+         while ((index = static_cast<int>(s.find(' ', index))) != std::string::npos) {
+             s.erase(index, 1);
+         }
+     }
+ }
+
+
+ std::string read_file(std::string file) {
+     std::ifstream fin(file);
+     std::stringstream buffer;
+     buffer << fin.rdbuf();
+     std::string str(buffer.str());
+     return str;
+ }
 
 
 

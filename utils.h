@@ -35,4 +35,15 @@ void get_file_path(const char *path, const char *file_name, char *file_path);
 
 void delete_file(char *path, char *removeshot);
 
+bool file_exists(const std::string &name);
+
+bool dir_exists(std::string path);
+
+long file_size(const char *filepath);
+
+void trim_space(std::string &s);
+
+
+std::string read_file(std::string file);
+
 #endif //CONVELUTION_UTILS_H
