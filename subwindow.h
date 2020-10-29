@@ -54,6 +54,10 @@ public:
 
     QPushButton *sucker_btn;
 
+    QPushButton *text_btn;
+
+    QPushButton *open_file_btn;
+
     bool cut_screen = false;
     bool key_log = true;
 

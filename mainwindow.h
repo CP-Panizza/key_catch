@@ -25,7 +25,7 @@
 
 
 #define SHOW_TIME 5000
-#define CIRCLE_R 60
+#define CIRCLE_R 40
 
 
 LRESULT __stdcall CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -161,6 +161,14 @@ public:
     QImage *color_img = nullptr;
     QTimer *show_color_str_timer = nullptr;
     QString clip_border_color_str;
+
+
+
+    //text
+    bool add_text = false;
+    int font_size = 50;
+    int text_clolor_idx = 0;
+    std::vector<QString> text_color{"red", "blue", "black","white"};
 };
 
 extern MainWindow *g_wd;

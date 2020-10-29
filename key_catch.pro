@@ -22,8 +22,10 @@ SOURCES += \
     keylog.cpp \
     main.cpp \
     mainwindow.cpp \
+    mylineedit.cpp \
     screencap.cpp \
     subwindow.cpp \
+    toojpeg.cpp \
     ttipwidget.cpp \
     utils.cpp
 
@@ -32,10 +34,15 @@ HEADERS += \
     avilib.h \
     item.h \
     keylog.h \
+    lock_free_queue.h \
     mainwindow.h \
     matrix.hpp \
+    mylineedit.h \
     screencap.h \
+    spin_mutex.h \
     subwindow.h \
+    thread_pool.h \
+    toojpeg.h \
     ttipwidget.h \
     utils.h
 

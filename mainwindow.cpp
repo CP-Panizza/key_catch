@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QClipboard>
 #include "ttipwidget.h"
+#include "mylineedit.h"
 #include <chrono>
 
 
@@ -304,7 +305,8 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "exit";
         UnhookWindowsHookEx(g_hHook);
         UnhookWindowsHookEx(g_hHook_mous);
-        this->app->quit();
+        this->system_tray->hide();
+        exit(0);
     });
     this->system_tray->show();
 
@@ -393,6 +395,10 @@ void MainWindow::init_canvas()
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
+    if(this->add_text){
+        new MyLineEdit(event->pos(), this->font_size, this->text_color[this->text_clolor_idx], this);
+    }
+
     if(this->stuta == DRAWING){
         if(event->button() == Qt::LeftButton)
         {
@@ -423,6 +429,17 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
             this->stuta = MainWindow::DRAWING;
         }
 
+
+        int width = ::abs(this->cut_img_end_x - this->cut_img_start_x);
+        int height = ::abs(this->cut_img_end_y - this->cut_img_start_y);
+        int start_x = this->cut_img_start_x < this->cut_img_end_x ? this->cut_img_start_x : this->cut_img_end_x;
+        int start_y = this->cut_img_start_y < this->cut_img_end_y ? this->cut_img_start_y : this->cut_img_end_y;
+        QRect rect(start_x, start_y, width, height);
+        QPixmap cropped = this->screen_img->copy(rect);
+        QClipboard *clip_board = QApplication::clipboard();
+        clip_board->setPixmap(cropped);
+
+
         QString fileName = QFileDialog::getSaveFileName(nullptr,
                 ("save file"),
                 "",
@@ -430,12 +447,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
         if (!fileName.isNull())
         {
-            int width = ::abs(this->cut_img_end_x - this->cut_img_start_x);
-            int height = ::abs(this->cut_img_end_y - this->cut_img_start_y);
-            int start_x = this->cut_img_start_x < this->cut_img_end_x ? this->cut_img_start_x : this->cut_img_end_x;
-            int start_y = this->cut_img_start_y < this->cut_img_end_y ? this->cut_img_start_y : this->cut_img_end_y;
-            QRect rect(start_x, start_y, width, height);
-            QPixmap cropped = this->screen_img->copy(rect);
             if(this->stuta == MainWindow::NONE){
                 this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
                 ::SetWindowLong((HWND)this->winId(), GWL_EXSTYLE, ::GetWindowLong((HWND)this->winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);

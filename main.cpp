@@ -19,13 +19,18 @@
 #include "ttipwidget.h"
 #include "audiorecorder.h"
 #include <time.h>
+#include "toojpeg.h"
+#include "utils.h"
+#include <QProcess>
+#include <QDesktopWidget>
+#include <QDesktopServices>
 
-
+//ffmpeg -f gdigrab -framerate 30 -offset_x 0 -offset_y 0 -video_size 1366x768 -i desktop out.mpg
 int main(int argc, char *argv[])
 {
+    delete_file(".\\tmp\\*", NULL);
     QApplication::setQuitOnLastWindowClosed(false);
     QApplication a(argc, argv);
-
     MainWindow w;
     w.setApplication(&a);
 
@@ -105,16 +110,14 @@ int main(int argc, char *argv[])
     });
 
 
+
     QObject::connect(float_pan.record_btn, &QPushButton::clicked, [&](){
         float_pan.is_record = !float_pan.is_record;
         if(float_pan.is_record){
             TTipWidget::ShowMassage(&w, "start record!");
-            if(w.screen_cap->m_stop){
-                w.screen_cap->m_stop = false;
-            }
+
             w.audio_recorder->startRecord();
             w.screen_cap->start();
-
             float_pan.record_btn->setToolTip("recording");
             float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/recording.png); width:30px; height: 30px;}"+ HOVER_BORDER);
         } else {
@@ -128,21 +131,24 @@ int main(int argc, char *argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
                 qDebug() << "stop";
+
                 QString strAppDir = QApplication::applicationDirPath();
 
                 QProcess proc;
-//                QObject::connect(&proc , &QProcess::readyReadStandardOutput , [&](){
-//                    qDebug() << proc.readAllStandardOutput();
-
-//                });
-//                QObject::connect(&proc , &QProcess::readyReadStandardError , [&](){
-//                    qDebug() << proc.readAllStandardError();
-
-//                });
-
+                //ffmpeg -f image2 -r 13.1579 -i ./tmp/%d.jpg -i ./tmp.wav -vcodec libx264 -acodec copy  out.mkv
                 QString avi_file = strAppDir + QString("/tmp.avi");
                 QString wav_file = strAppDir + QString("/tmp.wav");
                 QString ffmpeg_file = strAppDir + QString("/ffmpeg.exe");
+
+                QString cmd = ffmpeg_file + " -y -i " + wav_file + " -f mp2 " + strAppDir + "/tmp.mp3";
+                qDebug() << cmd;
+                proc.start(cmd);
+                proc.waitForFinished();
+                proc.close();
+
+
+                QRect screenRect = QApplication::desktop()->screenGeometry();
+                QString jpg2avi = strAppDir +  QString("/JPEG2AVI.exe");
                 time_t now(0);
                 now = time(NULL);
                 struct tm *timeinfo;
@@ -152,12 +158,21 @@ int main(int argc, char *argv[])
                 QString out_put_file = QString(buf) + "-screen_cap.avi";
                 qDebug() << out_put_file;
                 w.create_output_file = QApplication::applicationDirPath() + "/output/" + out_put_file;
-                QString cmd = ffmpeg_file +" -y -i " + avi_file + " -i " + wav_file + " -vcodec copy -acodec copy " + QString("./output/") + out_put_file;
-                qDebug() << cmd;
-                proc.start(cmd);
-                proc.waitForFinished();
-                proc.close();
+                QString cmd_2 = jpg2avi + " -i ./tmp/ -s " + strAppDir + "/tmp.mp3 -f " + QString::number(w.screen_cap->m_fps)
+                        + " -h " + QString::number(screenRect.height())
+                        + " -w " + QString::number(screenRect.width())
+                        + " -o ./output/" + out_put_file;
+                QProcess proc_2;
+                qDebug() << cmd_2;
+                proc_2.start(cmd_2);
+                proc_2.waitForFinished();
+                proc_2.close();
+
+
+
+                delete_file(".\\tmp\\*", NULL);
                 w.creating_video = false;
+                w.screen_cap->m_is_return = false;
             });
             mix_thread.detach();
             float_pan.record_btn->setToolTip("record");
@@ -174,6 +189,18 @@ int main(int argc, char *argv[])
             w.show_color_str_timer->stop();
         }
     });
+
+
+    QObject::connect(float_pan.open_file_btn, &QPushButton::clicked, [&](){
+        QString strAppDir = QApplication::applicationDirPath();
+        QUrl url(strAppDir + "/output");
+        bool ok = QDesktopServices::openUrl(url);
+
+        if(!ok){
+            TTipWidget::ShowMassage(&w, "con not open: " + url.url());
+        }
+    });
+
 
     if(!w.set_hook()){
         a.quit();

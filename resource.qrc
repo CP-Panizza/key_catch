@@ -14,5 +14,7 @@
         <file>record.png</file>
         <file>recording.png</file>
         <file>sucker.png</file>
+        <file>text.png</file>
+        <file>file.png</file>
     </qresource>
 </RCC>

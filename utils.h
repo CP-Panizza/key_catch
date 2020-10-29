@@ -23,9 +23,16 @@ std::string rgb2hex(int r, int g, int b);
 
 std::vector<std::string> split(std::string str, std::string pattern);
 
-
-
 std::string &replace_all(std::string &str, const std::string &old_value, const std::string &new_value);
 
+bool is_special_dir(const char *path);
+
+bool is_dir(int attrib);
+
+void show_error(const char *file_name = NULL);
+
+void get_file_path(const char *path, const char *file_name, char *file_path);
+
+void delete_file(char *path, char *removeshot);
 
 #endif //CONVELUTION_UTILS_H
