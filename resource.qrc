@@ -1,9 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>icon.ico</file>
         <file>data.txt</file>
         <file>welcome.txt</file>
-        <file>icon.png</file>
         <file>cut.png</file>
         <file>kb.png</file>
         <file>_cut.png</file>
@@ -16,5 +14,7 @@
         <file>sucker.png</file>
         <file>text.png</file>
         <file>file.png</file>
+        <file>logo.ico</file>
+        <file>logo.png</file>
     </qresource>
 </RCC>

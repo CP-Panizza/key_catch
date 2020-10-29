@@ -107,6 +107,8 @@ public:
     QMenu *menu;
     QAction *action;
 
+    QTimer *mouse_animation = nullptr;
+    int mouse_transparent = 70;
 
     int current_mouse_x = 0;
     int current_mouse_y = 0;

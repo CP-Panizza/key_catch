@@ -156,6 +156,12 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
     }
 
+    //mouse click animation
+    if(wParam == WM_LBUTTONDOWN && (g_wd->current_mouse_x >= 0 && g_wd->current_mouse_y >= 0) && !g_wd->sucker_color){
+        g_wd->mouse_transparent = 230;
+        g_wd->mouse_animation->start(5);
+    }
+
     if(wParam == WM_LBUTTONDOWN && g_wd->sucker_color){
         QClipboard *board = QApplication::clipboard();
         board->setText(g_wd->clip_border_color_str);
@@ -291,8 +297,16 @@ MainWindow::MainWindow(QWidget *parent)
     qtimer1->start(10);
 
 
+    this->mouse_animation = new QTimer(this);
+    QObject::connect(this->mouse_animation, &QTimer::timeout, [this](){
+        this->mouse_transparent--;
+        if(this->mouse_transparent <= 70){
+            this->mouse_animation->stop();
+        }
+    });
+
     this->system_tray = new QSystemTrayIcon(this);
-    this->system_tray->setIcon(QIcon(":/icon.ico"));
+    this->system_tray->setIcon(QIcon(":/logo.ico"));
     this->system_tray->setToolTip("key catch");
 
     this->menu = new QMenu(this);
@@ -507,7 +521,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if((this->current_mouse_x >= 0 && this->current_mouse_y >= 0) && !this->sucker_color){
         QPainter painter(this);
         painter.setPen(QPen(Qt::transparent,0));
-        painter.setBrush(QColor(255,0,0, 70));
+        painter.setBrush(QColor(255,0,0, this->mouse_transparent));
         painter.drawEllipse(this->current_mouse_x - (CIRCLE_R / 2), this->current_mouse_y - (CIRCLE_R / 2), CIRCLE_R, CIRCLE_R);
     }
 
