@@ -24,7 +24,10 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="img_lib.h">
+    <ClInclude Include="cap_lib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="toojpeg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,11 +35,14 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="img_lib.cpp">
+    <ClCompile Include="cap_lib.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="toojpeg.cpp">
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
