@@ -159,6 +159,7 @@ LRESULT __stdcall CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
     //mouse click animation
     if(wParam == WM_LBUTTONDOWN && (g_wd->current_mouse_x >= 0 && g_wd->current_mouse_y >= 0) && !g_wd->sucker_color){
         g_wd->mouse_transparent = 230;
+        g_wd->mouse_animation->stop();
         g_wd->mouse_animation->start(5);
     }
 
@@ -331,7 +332,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
 
-    this->screen_cap = new ScreenCap(this);
+    this->screen_cap = new ScreenCap;
     this->audio_recorder = new AudioRecorder;
     this->check_creating_video = new QTimer(this);
     QObject::connect(this->check_creating_video, &QTimer::timeout, [this](){

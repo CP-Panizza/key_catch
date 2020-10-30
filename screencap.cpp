@@ -15,12 +15,13 @@
 #include <rapidjson/stringbuffer.h>
 #include <iostream>
 #include "utils.h"
-#include <mutex>
+
 
 using namespace rapidjson;
 
-ScreenCap::ScreenCap(QWidget *parent): QThread(parent)
+ScreenCap::ScreenCap(): kc_thread_bass()
 {
+    this->set_priority(THREAD_PRIORITY_TIME_CRITICAL);
     this->strAppDir = QApplication::applicationDirPath() + "/tmp.avi";
     QRect screenRect = QApplication::desktop()->screenGeometry();
     this->m_size = screenRect.size();
@@ -50,6 +51,8 @@ ScreenCap::ScreenCap(QWidget *parent): QThread(parent)
         exit(-1);
     }
 
+    this->p_init_func();  //init_cap_screen
+
 
     QString strAppDir = QApplication::applicationDirPath();
     std::string data = read_file(strAppDir.toStdString() + std::string("/config.json"));
@@ -64,7 +67,7 @@ ScreenCap::ScreenCap(QWidget *parent): QThread(parent)
         if(d.HasMember("video_quality")){
             this->quality = d["video_quality"].GetInt();
             if(this->quality > 100 || this->quality <= 0){
-                this->thread_pool_size = 50;
+                this->quality = 50;
             }
             qDebug() << "quality: " << this->quality;
         }
@@ -72,7 +75,7 @@ ScreenCap::ScreenCap(QWidget *parent): QThread(parent)
         if(d.HasMember("fps")){
             this->m_fps = d["fps"].GetDouble();
             if(this->m_fps > 10 || this->m_fps <= 0){
-                this->thread_pool_size = 10;
+                this->m_fps = 10;
             }
             qDebug() << "fps: " << this->m_fps;
         }
@@ -81,7 +84,7 @@ ScreenCap::ScreenCap(QWidget *parent): QThread(parent)
             int num = d["create_video_thread_num"].GetInt();
             this->thread_pool_size = num;
             if(num > 5 || num <= 0){
-                this->thread_pool_size = 2;
+                this->thread_pool_size = 1;
             }
             qDebug() << "threads: " << this->thread_pool_size;
         }
@@ -94,26 +97,19 @@ ScreenCap::~ScreenCap()
 }
 
 
-void clear_queue(std::queue<Fream>& q) {
-    std::queue<Fream> empty;
-    swap(empty, q);
-}
-
-
 void ScreenCap::run()
 {
+
     this->handle_done = false;
     this->m_stop = false;
-//    if(!this->record_data.empty()){
-//        qDebug() << "clear_queue";
-//        clear_queue(this->record_data);
-//    }
 
-    this->p_init_func();  //init_cap_screen
+
+
     long totle_fream = 0l;
     long totle_take_time = 0l;
     time_t start_exec{0};
     time_t end_exec{0};
+
 
     std::vector<std::thread> threads(this->thread_pool_size);
     for(int i = 0; i < this->thread_pool_size; i++){
@@ -142,21 +138,24 @@ void ScreenCap::run()
                 this->free_buffer(data.data);
             }
         }, std::forward<int>(i));
+        ::SetThreadPriority((HANDLE)threads[i].native_handle(), THREAD_PRIORITY_LOWEST);
     }
 
     time_t sub_time = 1000.0 / this->m_fps;
     //ffmpeg -f image2 -r 13.1579 -i %d.jpg -i ..\release\tmp.wav -vcodec libx264 -acodec copy  out.mkv
-    time_t start_time = clock() - (sub_time + 100);
+    time_t start_time = clock() - (sub_time + 1);
     long len = 0;
     int w = 0, h = 0;
     unsigned char * data = nullptr;
     std::queue<Fream> data_buffer;
 
     time_t move_data_buffer_to_record_data_take_time{0};
+    bool is_move_data_buffer_to_record_data_take_time = false;
     while(!this->m_stop){
         auto sub = (clock() - start_time);
         if(sub < sub_time){
-            if(sub < move_data_buffer_to_record_data_take_time){
+            if((sub + (move_data_buffer_to_record_data_take_time * 3)) > sub_time
+                    && is_move_data_buffer_to_record_data_take_time){
                 continue;
             }
             time_t begin = clock();
@@ -164,6 +163,9 @@ void ScreenCap::run()
                 this->record_data.push(data_buffer.front());
                 this->m_mutex.unlock();
                 data_buffer.pop();
+                is_move_data_buffer_to_record_data_take_time = true;
+            } else {
+                is_move_data_buffer_to_record_data_take_time = false;
             }
             move_data_buffer_to_record_data_take_time = clock() - begin;
             continue;
@@ -171,10 +173,10 @@ void ScreenCap::run()
         start_time = clock();
         data = this->p_func(&w, &h, &len);
         if(this->m_mutex.try_lock()){
-            this->record_data.push(std::move(Fream(data, totle_fream, w, h, len)));
+            this->record_data.push(Fream(data, totle_fream, w, h, len));
             this->m_mutex.unlock();
         } else {
-            data_buffer.push(std::move(Fream(data, totle_fream, w, h, len)));
+            data_buffer.push(Fream(data, totle_fream, w, h, len));
         }
         totle_fream++;
     }

@@ -9,6 +9,7 @@
 #include "avilib.h"
 #include <queue>
 #include "spin_mutex.h"
+#include "kc_thread.h"
 #include <mutex>
 
 struct Fream{
@@ -24,9 +25,9 @@ struct Fream{
 
 
 
-class ScreenCap : public QThread
+class ScreenCap : public kc_thread_bass
 {
-    Q_OBJECT
+//    Q_OBJECT
 public:
 
     typedef void (*VOIDFUNC)();
@@ -34,7 +35,8 @@ public:
     typedef void (*FreeBuffer)(unsigned char * data);
 
 
-    ScreenCap(QWidget *parent);
+//    ScreenCap(QWidget *parent = nullptr);
+    ScreenCap();
     ~ScreenCap();
     void run();
     void stop();
@@ -53,16 +55,14 @@ public:
     const bool isRGB      = true;  // true = RGB image, else false = grayscale
     int quality             = 80;    // compression quality: 0 = worst, 100 = best, 80 to 90 are most often used
     const bool downsample = true; // false = save as YCbCr444 JPEG (better quality), true = YCbCr420 (smaller file)
-    size_t thread_pool_size = 2;
-    double m_fps = 10;
+    size_t thread_pool_size = 1;
+    double m_fps = 6;
 
     bool handle_done = false;
     std::queue<Fream> record_data;
-    std::mutex m_mutex;
-//    spin_mutex m_mutex;
+//    std::mutex m_mutex;
+    spin_mutex m_mutex{200}; //try xxx time to lock
 };
 
-
-void clear_queue(std::queue<HBITMAP>& );
 
 #endif // SCREENCAP_H

@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
             TTipWidget::ShowMassage(&w, "start record!");
 
             w.audio_recorder->startRecord();
-            w.screen_cap->start();
+            w.screen_cap->start(THREAD_PRIORITY_TIME_CRITICAL);
             float_pan.record_btn->setToolTip("recording");
             float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/recording.png); width:30px; height: 30px;}"+ HOVER_BORDER);
         } else {
