@@ -24,10 +24,17 @@
 #include <QProcess>
 #include <QDesktopWidget>
 #include <QDesktopServices>
+#include <chrono>
+
 
 //ffmpeg -f gdigrab -framerate 30 -offset_x 0 -offset_y 0 -video_size 1366x768 -i desktop out.mpg
 int main(int argc, char *argv[])
 {
+    if(!::SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS)){
+        qDebug() << "SetPriorityClass fail!";
+    }
+    unsigned long proc_id =  GetCurrentProcessId();
+    qDebug() << "CurrentProcessId: " << proc_id;
     delete_file(".\\tmp\\*", NULL);
     QApplication::setQuitOnLastWindowClosed(false);
     QApplication a(argc, argv);

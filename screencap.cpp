@@ -15,6 +15,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <iostream>
 #include "utils.h"
+#include "kc_timer.h"
 
 
 using namespace rapidjson;
@@ -107,8 +108,8 @@ void ScreenCap::run()
 
     long totle_fream = 0l;
     long totle_take_time = 0l;
-    time_t start_exec{0};
-    time_t end_exec{0};
+    int64_t start_exec{0};
+    int64_t end_exec{0};
 
 
     std::vector<std::thread> threads(this->thread_pool_size);
@@ -141,24 +142,24 @@ void ScreenCap::run()
         ::SetThreadPriority((HANDLE)threads[i].native_handle(), THREAD_PRIORITY_LOWEST);
     }
 
-    time_t sub_time = 1000.0 / this->m_fps;
+    int64_t sub_time = (1000000000000 / this->m_fps); //单位 皮秒
     //ffmpeg -f image2 -r 13.1579 -i %d.jpg -i ..\release\tmp.wav -vcodec libx264 -acodec copy  out.mkv
-    time_t start_time = clock() - (sub_time + 1);
+    int64_t start_time = kc_timer::current_time<kc_timer::picoseconds>() - (sub_time + 1);
     long len = 0;
     int w = 0, h = 0;
     unsigned char * data = nullptr;
     std::queue<Fream> data_buffer;
 
-    time_t move_data_buffer_to_record_data_take_time{0};
+    int64_t move_data_buffer_to_record_data_take_time{0};
     bool is_move_data_buffer_to_record_data_take_time = false;
     while(!this->m_stop){
-        auto sub = (clock() - start_time);
+        auto sub = (kc_timer::current_time<kc_timer::picoseconds>() - start_time);
         if(sub < sub_time){
             if((sub + (move_data_buffer_to_record_data_take_time * 3)) > sub_time
                     && is_move_data_buffer_to_record_data_take_time){
                 continue;
             }
-            time_t begin = clock();
+            int64_t begin = kc_timer::current_time<kc_timer::picoseconds>();
             if(!data_buffer.empty() && this->m_mutex.try_lock()){
                 this->record_data.push(data_buffer.front());
                 this->m_mutex.unlock();
@@ -167,10 +168,10 @@ void ScreenCap::run()
             } else {
                 is_move_data_buffer_to_record_data_take_time = false;
             }
-            move_data_buffer_to_record_data_take_time = clock() - begin;
+            move_data_buffer_to_record_data_take_time = kc_timer::current_time<kc_timer::picoseconds>() - begin;
             continue;
         }
-        start_time = clock();
+        start_time = kc_timer::current_time<kc_timer::picoseconds>();
         data = this->p_func(&w, &h, &len);
         if(this->m_mutex.try_lock()){
             this->record_data.push(Fream(data, totle_fream, w, h, len));

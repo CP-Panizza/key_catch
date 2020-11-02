@@ -38,6 +38,7 @@ HEADERS += \
     avilib.h \
     item.h \
     kc_thread.h \
+    kc_timer.h \
     keylog.h \
     lock_free_queue.h \
     mainwindow.h \
