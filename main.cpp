@@ -25,17 +25,29 @@
 #include <QDesktopWidget>
 #include <QDesktopServices>
 #include <chrono>
+#include "kc_signal.h"
 
 
 //ffmpeg -f gdigrab -framerate 30 -offset_x 0 -offset_y 0 -video_size 1366x768 -i desktop out.mpg
 int main(int argc, char *argv[])
 {
+
     if(!::SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS)){
         qDebug() << "SetPriorityClass fail!";
     }
     unsigned long proc_id =  GetCurrentProcessId();
     qDebug() << "CurrentProcessId: " << proc_id;
-    delete_file(".\\tmp\\*", NULL);
+
+    if(!dir_exists("tmp/")){
+        CreateFileDir("tmp/");
+    }
+
+    if(!dir_exists("output/")){
+        CreateFileDir("output/");
+    }
+
+    const char * str = ".\\tmp\\*";
+    delete_file(str, NULL);
     QApplication::setQuitOnLastWindowClosed(false);
     QApplication a(argc, argv);
     MainWindow w;
@@ -117,29 +129,43 @@ int main(int argc, char *argv[])
     });
 
 
-
+    QString strAppDir = QApplication::applicationDirPath();
+    kc_signal process_signal(std::string("kc_event"), kc_signal::Type::SENDER);;
+    QProcess screen_recorder;
     QObject::connect(float_pan.record_btn, &QPushButton::clicked, [&](){
         float_pan.is_record = !float_pan.is_record;
         if(float_pan.is_record){
             TTipWidget::ShowMassage(&w, "start record!");
-
+            process_signal.un_active();
+            QString exe = strAppDir + QString("/kc_screen_recorder.exe");
+            QString cmd = exe + " -f " + QString::number(w.screen_cap->m_fps)
+                    + " -q " + QString::number(w.screen_cap->quality)
+                    + " -t " + QString::number(w.screen_cap->thread_pool_size)
+                    + " -o tmp/";
             w.audio_recorder->startRecord();
-            w.screen_cap->start(THREAD_PRIORITY_TIME_CRITICAL);
+            screen_recorder.start(cmd);
+            //process_signal.wait();
+
+            //process_signal.un_active();
+            //w.screen_cap->start(THREAD_PRIORITY_TIME_CRITICAL);
+
             float_pan.record_btn->setToolTip("recording");
             float_pan.record_btn->setStyleSheet("QPushButton{border-image:url(:/recording.png); width:30px; height: 30px;}"+ HOVER_BORDER);
+            float_pan.m_hp = HIDEPOSATION::HP_Right;
+            float_pan.hideWindow();
         } else {
-
-            w.screen_cap->stop();
+            qDebug() << "click stop";
+            process_signal.active();
+            //w.screen_cap->stop();
             w.audio_recorder->stopRecord();
             w.creating_video = true;
             w.check_creating_video->start(1000);
             std::thread mix_thread([&](){
-                while(!w.screen_cap->m_is_return){
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-                }
+//                while(!w.screen_cap->m_is_return){
+//                    std::this_thread::sleep_for(std::chrono::seconds(1));
+//                }
+                process_signal.wait();
                 qDebug() << "stop";
-
-                QString strAppDir = QApplication::applicationDirPath();
 
                 QProcess proc;
                 //ffmpeg -f image2 -r 13.1579 -i ./tmp/%d.jpg -i ./tmp.wav -vcodec libx264 -acodec copy  out.mkv
@@ -176,8 +202,8 @@ int main(int argc, char *argv[])
                 proc_2.close();
 
 
-
-                delete_file(".\\tmp\\*", NULL);
+                const char * str = ".\\tmp\\*";
+                delete_file(str, NULL);
                 w.creating_video = false;
                 w.screen_cap->m_is_return = false;
             });

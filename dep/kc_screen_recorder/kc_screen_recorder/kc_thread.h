@@ -27,7 +27,7 @@ public:
     }
 
 
-    void set_priority(int nPriority){
+    bool set_priority(int nPriority){
         priority = nPriority;
     }
 

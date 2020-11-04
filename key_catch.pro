@@ -36,7 +36,9 @@ SOURCES += \
 HEADERS += \
     audiorecorder.h \
     avilib.h \
+    dirnet.h \
     item.h \
+    kc_signal.h \
     kc_thread.h \
     kc_timer.h \
     keylog.h \

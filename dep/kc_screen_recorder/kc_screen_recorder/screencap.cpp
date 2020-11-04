@@ -142,15 +142,13 @@ void ScreenCap::run()
         ::SetThreadPriority((HANDLE)threads[i].native_handle(), THREAD_PRIORITY_LOWEST);
     }
 
-    int64_t sub_time = (1000000000000 / this->m_fps); //每一帧时间间隔 单位 皮秒
-    qDebug() << "sub_time:" << sub_time;
+    int64_t sub_time = (1000000000000 / this->m_fps); //单位 皮秒
     //ffmpeg -f image2 -r 13.1579 -i %d.jpg -i ..\release\tmp.wav -vcodec libx264 -acodec copy  out.mkv
-    int64_t start_time = kc_timer::current_time<kc_timer::picoseconds>() - (sub_time);
+    int64_t start_time = kc_timer::current_time<kc_timer::picoseconds>() - (sub_time + 1);
     long len = 0;
     int w = 0, h = 0;
     unsigned char * data = nullptr;
     std::queue<Fream> data_buffer;
-    int64_t fragment_time = 0;  //每一帧截屏代码运行的时间碎片，当时间碎片大于或等于两帧图片之间的时间，就清零，且调整一帧（丢弃）
 
     int64_t move_data_buffer_to_record_data_take_time{0};
     bool is_move_data_buffer_to_record_data_take_time = false;
@@ -173,18 +171,6 @@ void ScreenCap::run()
             move_data_buffer_to_record_data_take_time = kc_timer::current_time<kc_timer::picoseconds>() - begin;
             continue;
         }
-
-
-        if(fragment_time >= (sub_time * 1)){
-            start_time = kc_timer::current_time<kc_timer::picoseconds>();
-            fragment_time = 0;
-            qDebug() << "jugement";
-            continue;
-        }
-        int64_t tmp_time = (sub - sub_time);
-        if(tmp_time > 0){
-            fragment_time += tmp_time;
-        }
         start_time = kc_timer::current_time<kc_timer::picoseconds>();
         data = this->p_func(&w, &h, &len);
         if(this->m_mutex.try_lock()){
@@ -195,7 +181,6 @@ void ScreenCap::run()
         }
         totle_fream++;
     }
-    qDebug() << "fragment_time:" << fragment_time;
 
     while(!data_buffer.empty()){
         this->m_mutex.lock();

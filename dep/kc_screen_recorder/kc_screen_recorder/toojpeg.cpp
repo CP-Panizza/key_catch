@@ -1,11 +1,7 @@
-﻿// //////////////////////////////////////////////////////////
-// toojpeg.cpp
-// written by Stephan Brumme, 2018-2019
-// see https://create.stephan-brumme.com/toojpeg/
-//
-
+#include "stdafx.h"
 #include "toojpeg.h"
-#include <cstdint>
+#include <stdint.h>
+
 // - the "official" specifications: https://www.w3.org/Graphics/JPEG/itu-t81.pdf and https://www.w3.org/Graphics/JPEG/jfif3.pdf
 // - Wikipedia has a short description of the JFIF/JPEG file format: https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
 // - the popular STB Image library includes Jon's JPEG encoder as well: https://github.com/nothings/stb/blob/master/stb_image_write.h

@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <windows.h>
 
 template< class T>
 bool have(std::vector<T> &src, T target){
@@ -33,7 +34,7 @@ void show_error(const char *file_name = NULL);
 
 void get_file_path(const char *path, const char *file_name, char *file_path);
 
-void delete_file(char *path, char *removeshot);
+void delete_file(const char *path, char *removeshot);
 
 bool file_exists(const std::string &name);
 
@@ -45,5 +46,10 @@ void trim_space(std::string &s);
 
 
 std::string read_file(std::string file);
+
+
+LPCWSTR stringToLPCWSTR(std::string orig);
+
+void CreateFileDir(std::string sPath);
 
 #endif //CONVELUTION_UTILS_H

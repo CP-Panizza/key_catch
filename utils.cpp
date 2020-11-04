@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <fstream>
+#include <windows.h>
 
 
 std::map<int, std::string> val_map{
@@ -128,7 +129,7 @@ bool is_special_dir(const char *path)
 }
 
 //递归搜索目录中文件并删除
- void delete_file(char *path, char *removeshot)
+ void delete_file(const char *path, char *removeshot)
 {
 
     _finddata_t dir_info;
@@ -220,5 +221,28 @@ bool is_special_dir(const char *path)
      return str;
  }
 
+
+
+
+LPCWSTR stringToLPCWSTR(std::string orig)
+{
+	size_t origsize = orig.length() + 1;
+	const size_t newsize = 100;
+	size_t convertedChars = 0;
+	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t)*(orig.length() - 1));
+	mbstowcs_s(&convertedChars, wcstring, origsize, orig.c_str(), _TRUNCATE);
+	return wcstring; 
+}
+
+void CreateFileDir(std::string sPath)
+{
+	replace_all(sPath, "/", "\\");
+	int nPos = sPath.find('\\');
+	while (nPos != -1)
+	{
+		CreateDirectory(stringToLPCWSTR(std::string(sPath.begin(), sPath.begin() + nPos)), NULL);
+		nPos = sPath.find('\\', nPos + 1);
+	}
+}
 
 
